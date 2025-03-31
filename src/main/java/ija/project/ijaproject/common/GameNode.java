@@ -11,6 +11,8 @@ public class GameNode extends AbstractObservableField {
     private final Type type;
     private final Position position;
     private Set<Side> sides;
+    private final Set<Side> initialSides;
+    private int turnCount = 0;
     private boolean isPowered = false;
 
     public GameNode(Position position, Type type, Side... sides) {
@@ -18,6 +20,8 @@ public class GameNode extends AbstractObservableField {
         this.position = position;
         this.sides = EnumSet.noneOf(Side.class);
         Collections.addAll(this.sides, sides);
+        this.initialSides = EnumSet.copyOf(this.sides);
+        this.turnCount = 0;
     }
 
     public boolean containsConnector(Side s) {
@@ -57,7 +61,37 @@ public class GameNode extends AbstractObservableField {
             newSides.add(side.next());
         }
         this.sides = newSides;
+        this.turnCount++;
         this.notifyObservers();
+    }
+
+    public int turnsToInitialState() {
+        // Compare current sides with initial sides
+        // For each possible rotation (0-3), check if rotating would match initial state
+
+        Set<Side> tempSides = EnumSet.copyOf(this.sides);
+        for (int i = 0; i < 4; i++) {
+            if (sidesEquivalent(tempSides, initialSides)) {
+                return i;
+            }
+
+            // Rotate tempSides to check next position
+            Set<Side> rotatedSides = EnumSet.noneOf(Side.class);
+            for (Side side : tempSides) {
+                rotatedSides.add(side.next());
+            }
+            tempSides = rotatedSides;
+        }
+
+        // Should never reach here if sides are valid
+        return 0;
+    }
+
+    private boolean sidesEquivalent(Set<Side> sides1, Set<Side> sides2) {
+        if (sides1.size() != sides2.size()) {
+            return false;
+        }
+        return sides1.containsAll(sides2);
     }
 
     @Override

@@ -1,24 +1,33 @@
 package ija.project.ijaproject.view;
 
+import ija.project.ijaproject.common.GameNode;
 import ija.project.ijaproject.common.tool.Observable;
 import ija.project.ijaproject.common.tool.ToolField;
 import javafx.application.Platform;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
 
 public class FieldView extends Pane implements Observable.Observer {
     private final ToolField field;
+    private final boolean infoView;
     private int changedModel = 0;
     private boolean initialLayoutDone = false;
 
-    public FieldView(final ToolField field) {
+    public FieldView(final ToolField field, boolean infoView) {
         this.field = field;
+        this.infoView = infoView;
         this.setStyle("-fx-border-color: gray;");
         this.setPrefSize(50, 50);
         this.setMinSize(50, 50);  // Ensure minimum size
-        this.setOnMouseClicked(event -> field.turn());
+        if(!this.infoView){
+            this.setOnMouseClicked(event -> field.turn());
+        }
         field.addObserver(this);
 
         // Add a layout listener to update view once component is sized
@@ -83,6 +92,30 @@ public class FieldView extends Pane implements Observable.Observer {
             Circle circle = new Circle(centerX, centerY, Math.min(width, height) / 2 - 5);
             circle.setFill(color);
             this.getChildren().add(circle);
+        }
+
+        // Add turn count information in info view mode
+        if (infoView && field instanceof GameNode) {
+            GameNode node = (GameNode) field;
+            int turnsNeeded = node.turnsToInitialState();
+
+            // Only show if turns are needed
+            if (turnsNeeded > 0) {
+                Label turnLabel = new Label(String.valueOf(turnsNeeded));
+                turnLabel.setTextFill(Color.WHITE);
+                turnLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
+                turnLabel.setTextAlignment(TextAlignment.CENTER);
+
+                // Center the label
+                turnLabel.setLayoutX(centerX - 5);
+                turnLabel.setLayoutY(centerY - 10);
+
+                // Add a background circle to make text more visible
+                Circle background = new Circle(centerX, centerY, 12);
+                background.setFill(Color.rgb(0, 0, 0, 0.7));
+
+                this.getChildren().addAll(background, turnLabel);
+            }
         }
     }
 
