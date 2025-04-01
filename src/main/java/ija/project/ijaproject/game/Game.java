@@ -16,7 +16,7 @@ public class Game implements ToolEnvironment, Observable.Observer {
     private boolean updating = false; // Flag to prevent re-entrant calls
     private GameLogger logger = null;
 
-    public Game(int rows, int cols, GameLogger logger) {
+    public Game(int rows, int cols) {
         if (rows < 1 || cols < 1) {
             throw new IllegalArgumentException();
         }
@@ -30,7 +30,8 @@ public class Game implements ToolEnvironment, Observable.Observer {
                 this.setBoardNode(position, new GameNode(position, NodeType.EMPTY));
             }
         }
-        this.logger = logger;
+        this.logger = new GameLogger();
+        this.logger.clear();
         this.logger.logAction("G [" + rows + "@" + cols + "]");
     }
 
@@ -147,6 +148,18 @@ public class Game implements ToolEnvironment, Observable.Observer {
         }
     }
 
+    public boolean isComplete() {
+        for (int r = 1; r <= rows; r++) {
+            for (int c = 1; c <= cols; c++) {
+                GameNode n = this.node(new NodePosition(r, c));
+                if (n != null && n.isBulb()) {
+                    if (!n.light()) return false;
+                }
+            }
+        }
+        return true;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -179,5 +192,9 @@ public class Game implements ToolEnvironment, Observable.Observer {
 
     private boolean isValidPosition(NodePosition position) {
         return position.getRow() > 0 && position.getRow() <= rows && position.getCol() > 0 && position.getCol() <= cols;
+    }
+
+    public GameLogger logger() {
+        return logger;
     }
 }

@@ -6,7 +6,7 @@
 package ija.project.ijaproject.common.tool;
 
 public interface ToolField extends Observable {
-    void turn();
+    void turn(boolean player);
 
     boolean north();
 

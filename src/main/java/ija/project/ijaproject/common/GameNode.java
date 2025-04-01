@@ -47,6 +47,7 @@ public class GameNode extends AbstractObservableField {
     public boolean isEmpty() {
         return this.type == NodeType.EMPTY;
     }
+
     public boolean light() {
         return this.isPowered;
     }
@@ -58,23 +59,27 @@ public class GameNode extends AbstractObservableField {
         }
     }
 
-    public void turn() {
+    public int getTurnCount() {
+        return this.turnCount;
+    }
+
+    public void turn(boolean player) {
         Set<NodeSide> newSides = EnumSet.noneOf(NodeSide.class);
         for (NodeSide side : this.sides) {
             newSides.add(side.next());
         }
         this.sides = newSides;
-        this.turnCount++;
+        if (player) this.turnCount++;
         this.notifyObservers("T " + this.position);
     }
 
-    public void turnBack() {
+    public void turnBack(boolean player) {
         Set<NodeSide> newSides = EnumSet.noneOf(NodeSide.class);
         for (NodeSide side : this.sides) {
             newSides.add(side.previous());
         }
         this.sides = newSides;
-        this.turnCount--;
+        if (player) this.turnCount--;
         this.notifyObservers(null);
     }
 

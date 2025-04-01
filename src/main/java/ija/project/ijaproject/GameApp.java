@@ -24,7 +24,6 @@ import java.util.*;
 
 public class GameApp extends Application {
     private Game game;
-    private GameLogger logger = new GameLogger();
     private BoardView boardView;
     private BoardView infoView;
     private Stage infoStage;
@@ -97,7 +96,7 @@ public class GameApp extends Application {
         replayControls.setAlignment(Pos.CENTER);
 
         Button saveLogButton = new Button("Save Log");
-        saveLogButton.setOnAction(e -> logger.save());
+        saveLogButton.setOnAction(e -> this.game.logger().save());
 
         Button loadLogButton = new Button("Load Log");
         loadLogButton.setOnAction(e -> loadGameFromLog());
@@ -136,7 +135,7 @@ public class GameApp extends Application {
         }
 
         // Use GameRepo to generate the game
-        game = GameRepo.generate(difficulty, logger);
+        game = GameRepo.generate(difficulty);
 
         // Update the board view
         if (boardView != null) {
@@ -215,9 +214,9 @@ public class GameApp extends Application {
     }
 
     private void replayPreviousMove() {
-        if (logger.position() > 0 && game != null) {
-            logger.disable();
-            String[] parts = logger.getLine().split(" ", 2);
+        if (this.game.logger().position() > 0 && game != null) {
+            this.game.logger().disable();
+            String[] parts = this.game.logger().getLine().split(" ", 2);
             switch (parts[0]) {
                 case "G":
                     // Game initialization - Cannot be undone
@@ -227,21 +226,20 @@ public class GameApp extends Application {
                     break;
                 case "T":
                     // Turn action - format is "T [row@col]"
-                    System.out.println(parts[0] + " " + parts[1]);
                     NodePosition pos = NodePosition.fromString(parts[1]);
-                    game.node(pos).turnBack();
-                    logger.previous();
+                    game.node(pos).turnBack(true);
+                    this.game.logger().previous();
                     break;
             }
-            logger.enable();
+            this.game.logger().enable();
         }
     }
 
     private void replayNextMove() {
-        if (logger.position() < logger.log().size() - 1 && game != null) {
-            logger.disable();
-            logger.next();
-            String[] parts = logger.getLine().split(" ", 2);
+        if (this.game.logger().position() < this.game.logger().log().size() - 1 && game != null) {
+            this.game.logger().disable();
+            this.game.logger().next();
+            String[] parts = this.game.logger().getLine().split(" ", 2);
             switch (parts[0]) {
                 case "G":
                     // Game initialization - Should not be possible to undo
@@ -252,10 +250,10 @@ public class GameApp extends Application {
                 case "T":
                     // Turn action - format is "T [row@col]"
                     NodePosition pos = NodePosition.fromString(parts[1]);
-                    game.node(pos).turn();
+                    game.node(pos).turn(true);
                     break;
             }
-            logger.enable();
+            this.game.logger().enable();
         }
     }
 
@@ -284,16 +282,20 @@ public class GameApp extends Application {
                     NodePosition pos = NodePosition.fromString(logActions.get(1));
                     if (pos != null) {
                         // Temporarily disable logging
-                        logger.clear();
+                        this.game.logger().clear();
 
                         // Create new game
-                        game = new Game(pos.getRow(), pos.getCol(), logger);
+                        game = new Game(pos.getRow(), pos.getCol());
 
                         // Process remaining actions
+                        boolean generated = false;
                         for (int i = 2; i < logActions.size(); i++) {
                             String action = logActions.get(i);
                             if (action.equals("N") || action.equals("T")) {
-                                executeAction(action + " " + logActions.get(++i));
+                                generated = executeAction(action + " " + logActions.get(++i), generated);
+                            } else if (action.equals("Gen")) {
+                                this.game.logger().logAction("Gen finished");
+                                generated = true;
                             }
                         }
 
@@ -315,21 +317,21 @@ public class GameApp extends Application {
         }
     }
 
-    private void executeAction(String action) {
-        if (action == null || action.isEmpty()) return;
+    private boolean executeAction(String action, boolean generated) {
+        if (action == null || action.isEmpty()) return generated;
 
         // Parse and execute the action based on its type
         String[] parts = action.split(" ", 2);
         String actionType = parts[0];
         NodePosition pos = null;
-
+        System.out.println(actionType);
         switch (actionType) {
             case "G":
                 // Game initialization
                 if (parts.length > 1) {
                     pos = NodePosition.fromString(parts[1]);
                     if (pos != null) {
-                        game = new Game(pos.getRow(), pos.getCol(), logger);
+                        game = new Game(pos.getRow(), pos.getCol());
 
                         if (boardView != null) {
                             BorderPane root = (BorderPane) boardView.getParent();
@@ -356,10 +358,12 @@ public class GameApp extends Application {
                 // Turn action - format is "T [row@col]"
                 if (parts.length > 1) {
                     pos = NodePosition.fromString(parts[1]);
-                    if (pos != null) game.node(pos).turn();
+                    if (pos != null) game.node(pos).turn(generated);
                 }
                 break;
+
         }
+        return generated;
     }
 
     private void parseAndCreateNode(String nodeStr) {

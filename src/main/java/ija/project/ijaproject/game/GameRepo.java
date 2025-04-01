@@ -58,14 +58,7 @@ public class GameRepo {
         });
     }
 
-    /**
-     * Generates a game based on the specified difficulty
-     *
-     * @param difficulty The difficulty level (Easy, Medium, Hard)
-     * @param logger     Optional logger for the game
-     * @return A new Game instance with randomly rotated pieces
-     */
-    public static Game generate(String difficulty, GameLogger logger) {
+    public static Game generate(String difficulty) {
         Object[][] puzzle = PUZZLES.get(difficulty);
         if (puzzle == null) {
             throw new IllegalArgumentException("Unknown difficulty: " + difficulty);
@@ -75,7 +68,7 @@ public class GameRepo {
         int rows = size[0];
         int cols = size[1];
 
-        Game game = new Game(rows, cols, logger);
+        Game game = new Game(rows, cols);
 
         // Create puzzle elements
         for (Object[] n : puzzle) {
@@ -101,6 +94,8 @@ public class GameRepo {
         // Randomly rotate pieces
         randomizeRotations(game);
 
+        game.logger().logAction("Gen finished");
+
         return game;
     }
 
@@ -114,7 +109,7 @@ public class GameRepo {
                 NodePosition pos = new NodePosition(row, col);
                 if (game.node(pos) != null && !game.node(pos).isEmpty()) {
                     int rotations = rand.nextInt(4);
-                    for (int i = 0; i < rotations; i++) game.node(pos).turn();
+                    for (int i = 0; i < rotations; i++) game.node(pos).turn(false);
                 }
             }
         }

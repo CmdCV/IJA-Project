@@ -25,7 +25,7 @@ public class FieldView extends Pane implements Observable.Observer {
         this.setPrefSize(size, size);
         this.setMinSize(size, size);  // Ensure minimum size
         if (!this.infoView) {
-            this.setOnMouseClicked(event -> field.turn());
+            this.setOnMouseClicked(event -> field.turn(true));
         }
         field.addObserver(this);
 
