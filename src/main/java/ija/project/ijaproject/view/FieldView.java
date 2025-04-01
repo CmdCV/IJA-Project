@@ -16,16 +16,15 @@ import javafx.scene.text.TextAlignment;
 public class FieldView extends Pane implements Observable.Observer {
     private final ToolField field;
     private final boolean infoView;
-    private int changedModel = 0;
     private boolean initialLayoutDone = false;
 
-    public FieldView(final ToolField field, boolean infoView) {
+    public FieldView(final ToolField field, boolean infoView, int size) {
         this.field = field;
         this.infoView = infoView;
         this.setStyle("-fx-border-color: gray;");
-        this.setPrefSize(50, 50);
-        this.setMinSize(50, 50);  // Ensure minimum size
-        if(!this.infoView){
+        this.setPrefSize(size, size);
+        this.setMinSize(size, size);  // Ensure minimum size
+        if (!this.infoView) {
             this.setOnMouseClicked(event -> field.turn());
         }
         field.addObserver(this);
@@ -103,15 +102,15 @@ public class FieldView extends Pane implements Observable.Observer {
             if (turnsNeeded > 0) {
                 Label turnLabel = new Label(String.valueOf(turnsNeeded));
                 turnLabel.setTextFill(Color.WHITE);
-                turnLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
+                turnLabel.setFont(Font.font("System", FontWeight.BOLD, height*0.33));
                 turnLabel.setTextAlignment(TextAlignment.CENTER);
 
                 // Center the label
-                turnLabel.setLayoutX(centerX - 5);
-                turnLabel.setLayoutY(centerY - 10);
+                turnLabel.setLayoutX(centerX - (height*0.1));
+                turnLabel.setLayoutY(centerY - (height*0.2));
 
                 // Add a background circle to make text more visible
-                Circle background = new Circle(centerX, centerY, 12);
+                Circle background = new Circle(centerX, centerY, height*0.25);
                 background.setFill(Color.rgb(0, 0, 0, 0.7));
 
                 this.getChildren().addAll(background, turnLabel);
@@ -121,7 +120,6 @@ public class FieldView extends Pane implements Observable.Observer {
 
     @Override
     public void update(Observable observable, String event) {
-        ++this.changedModel;
         Platform.runLater(this::updateView);
     }
 }

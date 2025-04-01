@@ -29,10 +29,11 @@ public class BoardView extends GridPane {
     }
 
     private void initializeBoard() {
+        int size = 500 / Math.max(environment.rows(), environment.cols());
         for (int row = 1; row <= environment.rows(); row++) {
             for (int col = 1; col <= environment.cols(); col++) {
                 ToolField field = environment.fieldAt(row, col);
-                FieldView fieldView = new FieldView(field, this.infoBoardView);
+                FieldView fieldView = new FieldView(field, this.infoBoardView, size);
                 this.add(fieldView, col - 1, row - 1);
             }
         }

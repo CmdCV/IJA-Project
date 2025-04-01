@@ -7,6 +7,7 @@ import static ija.project.ijaproject.common.NodeSide.*;
 
 import ija.project.ijaproject.game.Game;
 import ija.project.ijaproject.game.GameLogger;
+import ija.project.ijaproject.game.GameRepo;
 import ija.project.ijaproject.view.BoardView;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -19,8 +20,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class GameApp extends Application {
@@ -80,9 +79,10 @@ public class GameApp extends Application {
 
         // Difficulty selection
         ComboBox<String> difficultySelector = new ComboBox<>();
-        difficultySelector.getItems().addAll(PUZZLES.keySet());
+        difficultySelector.getItems().addAll(GameRepo.getAvailablePuzzles());
         difficultySelector.setValue("Easy");
         difficultySelector.setOnAction(e -> createGame(difficultySelector.getValue()));
+
 
         Button newGameButton = new Button("New Game");
         newGameButton.setOnAction(e -> createGame(difficultySelector.getValue()));
@@ -100,7 +100,7 @@ public class GameApp extends Application {
         saveLogButton.setOnAction(e -> logger.save());
 
         Button loadLogButton = new Button("Load Log");
-        loadLogButton.setOnAction(e -> loadGameLog());
+        loadLogButton.setOnAction(e -> loadGameFromLog());
 
         Button prevButton = new Button("←");
         prevButton.setOnAction(e -> replayPreviousMove());
@@ -135,49 +135,8 @@ public class GameApp extends Application {
             infoStage = null;
         }
 
-        Object[][] puzzle = PUZZLES.get(difficulty);
-        int rows = 8;
-        int cols = 8;
-
-        if (difficulty.equals("Medium")) {
-            rows = 10;
-            cols = 12;
-        }
-
-        game = new Game(rows, cols, logger);
-
-        // Create puzzle elements
-        for (Object[] n : puzzle) {
-            String type = (String) n[0];
-            int row = (Integer) n[1];
-            int col = (Integer) n[2];
-
-            NodeSide[] sides = new NodeSide[n.length - 3];
-            for (int i = 3; i < n.length; i++) {
-                sides[i - 3] = (NodeSide) n[i];
-            }
-
-            NodePosition p = new NodePosition(row, col);
-            switch (type) {
-                case "L" -> game.createLinkNode(p, sides);
-                case "B" -> game.createBulbNode(p, sides[0]);
-                case "P" -> game.createPowerNode(p, sides);
-            }
-        }
-
-        game.init();
-
-        // Randomly rotate pieces
-        Random rand = new Random();
-        for (int row = 1; row <= game.rows(); row++) {
-            for (int col = 1; col <= game.cols(); col++) {
-                NodePosition pos = new NodePosition(row, col);
-                if (game.node(pos) != null && !game.node(pos).isEmpty()) {
-                    int rotations = rand.nextInt(4);
-                    for (int i = 0; i < rotations; i++) game.node(pos).turn();
-                }
-            }
-        }
+        // Use GameRepo to generate the game
+        game = GameRepo.generate(difficulty, logger);
 
         // Update the board view
         if (boardView != null) {
@@ -255,7 +214,52 @@ public class GameApp extends Application {
         });
     }
 
-    public void loadGameLog() {
+    private void replayPreviousMove() {
+        if (logger.position() > 0 && game != null) {
+            logger.disable();
+            String[] parts = logger.getLine().split(" ", 2);
+            switch (parts[0]) {
+                case "G":
+                    // Game initialization - Cannot be undone
+                    break;
+                case "N":
+                    // Node creation - Cannot be undone
+                    break;
+                case "T":
+                    // Turn action - format is "T [row@col]"
+                    System.out.println(parts[0] + " " + parts[1]);
+                    NodePosition pos = NodePosition.fromString(parts[1]);
+                    game.node(pos).turnBack();
+                    logger.previous();
+                    break;
+            }
+            logger.enable();
+        }
+    }
+
+    private void replayNextMove() {
+        if (logger.position() < logger.log().size() - 1 && game != null) {
+            logger.disable();
+            logger.next();
+            String[] parts = logger.getLine().split(" ", 2);
+            switch (parts[0]) {
+                case "G":
+                    // Game initialization - Should not be possible to undo
+                    break;
+                case "N":
+                    // Node creation - Should not be possible to undo
+                    break;
+                case "T":
+                    // Turn action - format is "T [row@col]"
+                    NodePosition pos = NodePosition.fromString(parts[1]);
+                    game.node(pos).turn();
+                    break;
+            }
+            logger.enable();
+        }
+    }
+
+    private void loadGameFromLog() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Load Game Log");
         fileChooser.getExtensionFilters().add(
@@ -308,51 +312,6 @@ public class GameApp extends Application {
             } catch (IOException e) {
                 System.err.println("Error loading game log: " + e.getMessage());
             }
-        }
-    }
-
-    public void replayPreviousMove() {
-        if (logger.position() > 0 && game != null) {
-            logger.disable();
-            String[] parts = logger.getLine().split(" ", 2);
-            switch (parts[0]) {
-                case "G":
-                    // Game initialization - Cannot be undone
-                    break;
-                case "N":
-                    // Node creation - Cannot be undone
-                    break;
-                case "T":
-                    // Turn action - format is "T [row@col]"
-                    System.out.println(parts[0] + " " + parts[1]);
-                    NodePosition pos = NodePosition.fromString(parts[1]);
-                    game.node(pos).turnBack();
-                    logger.previous();
-                    break;
-            }
-            logger.enable();
-        }
-    }
-
-    public void replayNextMove() {
-        if (logger.position() < logger.log().size() - 1 && game != null) {
-            logger.disable();
-            logger.next();
-            String[] parts = logger.getLine().split(" ", 2);
-            switch (parts[0]) {
-                case "G":
-                    // Game initialization - Should not be possible to undo
-                    break;
-                case "N":
-                    parseAndCreateNode(parts[1]);
-                    break;
-                case "T":
-                    // Turn action - format is "T [row@col]"
-                    NodePosition pos = NodePosition.fromString(parts[1]);
-                    game.node(pos).turn();
-                    break;
-            }
-            logger.enable();
         }
     }
 
