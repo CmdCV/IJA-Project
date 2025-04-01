@@ -1,7 +1,7 @@
 package ija.project.ijaproject.view;
 
-import ija.project.ijaproject.common.GameNode;
-import ija.project.ijaproject.common.NodePosition;
+import ija.project.ijaproject.game.node.GameNode;
+import ija.project.ijaproject.game.node.NodePosition;
 import ija.project.ijaproject.game.Game;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -34,8 +34,8 @@ public class BoardView extends GridPane {
         for (int row = 1; row <= environment.rows(); row++) {
             for (int col = 1; col <= environment.cols(); col++) {
                 GameNode field = environment.node(new NodePosition(row, col));
-                FieldView fieldView = new FieldView(field, this.infoBoardView, size);
-                this.add(fieldView, col - 1, row - 1);
+                NodeView nodeView = new NodeView(field, this.infoBoardView, size);
+                this.add(nodeView, col - 1, row - 1);
             }
         }
     }

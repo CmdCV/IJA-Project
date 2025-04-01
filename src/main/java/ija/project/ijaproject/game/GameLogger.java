@@ -1,6 +1,6 @@
 package ija.project.ijaproject.game;
 
-import ija.project.ijaproject.common.tool.Observable;
+import ija.project.ijaproject.common.Observable;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -48,12 +48,12 @@ public class GameLogger implements Observable.Observer {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Game Log");
         fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Game Log Files", "*.glog")
+                new FileChooser.ExtensionFilter("Game Log Files", "*.log")
         );
 
         // Generate default filename with timestamp
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        fileChooser.setInitialFileName("game_" + timestamp + ".glog");
+        fileChooser.setInitialFileName("bulbGame_" + timestamp);
 
         File file = fileChooser.showSaveDialog(null);
         if (file != null) {

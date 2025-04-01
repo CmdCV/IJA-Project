@@ -1,4 +1,4 @@
-package ija.project.ijaproject.common;
+package ija.project.ijaproject.game.node;
 
 public enum NodeSide {
     NORTH, EAST, SOUTH, WEST;

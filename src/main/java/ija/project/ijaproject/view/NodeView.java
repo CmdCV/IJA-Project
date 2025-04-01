@@ -1,7 +1,7 @@
 package ija.project.ijaproject.view;
 
-import ija.project.ijaproject.common.GameNode;
-import ija.project.ijaproject.common.tool.Observable;
+import ija.project.ijaproject.game.node.GameNode;
+import ija.project.ijaproject.common.Observable;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
@@ -12,16 +12,16 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 
-import static ija.project.ijaproject.common.NodeSide.*;
-import static ija.project.ijaproject.common.NodeType.BULB;
-import static ija.project.ijaproject.common.NodeType.POWER;
+import static ija.project.ijaproject.game.node.NodeSide.*;
+import static ija.project.ijaproject.game.node.NodeType.BULB;
+import static ija.project.ijaproject.game.node.NodeType.POWER;
 
-public class FieldView extends Pane implements Observable.Observer {
+public class NodeView extends Pane implements Observable.Observer {
     private final GameNode field;
     private final boolean infoView;
     private boolean initialLayoutDone = false;
 
-    public FieldView(final GameNode field, boolean infoView, int size) {
+    public NodeView(final GameNode field, boolean infoView, int size) {
         this.field = field;
         this.infoView = infoView;
         this.setStyle("-fx-border-color: gray;");
@@ -97,9 +97,8 @@ public class FieldView extends Pane implements Observable.Observer {
         }
 
         // Add turn count information in info view mode
-        if (infoView && field instanceof GameNode) {
-            GameNode node = field;
-            int turnsNeeded = node.turnsToInitialState();
+        if (infoView) {
+            int turnsNeeded = field.turnsToInitialState();
 
             // Only show if turns are needed
             if (turnsNeeded > 0) {

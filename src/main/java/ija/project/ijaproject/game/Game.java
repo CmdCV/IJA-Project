@@ -1,19 +1,19 @@
 package ija.project.ijaproject.game;
 
-import ija.project.ijaproject.common.GameNode;
-import ija.project.ijaproject.common.NodePosition;
-import ija.project.ijaproject.common.NodeSide;
-import ija.project.ijaproject.common.NodeType;
-import ija.project.ijaproject.common.tool.Observable;
+import ija.project.ijaproject.game.node.GameNode;
+import ija.project.ijaproject.game.node.NodePosition;
+import ija.project.ijaproject.game.node.NodeSide;
+import ija.project.ijaproject.game.node.NodeType;
+import ija.project.ijaproject.common.Observable;
 
-import static ija.project.ijaproject.common.NodeType.BULB;
-import static ija.project.ijaproject.common.NodeType.POWER;
+import static ija.project.ijaproject.game.node.NodeType.BULB;
+import static ija.project.ijaproject.game.node.NodeType.POWER;
 
 public class Game implements Observable.Observer {
     private final int rows;
     private final int cols;
     private final GameNode[][] board;
-    private GameLogger logger = null;
+    private final GameLogger logger;
     private NodePosition powerPlaced = null;
     private boolean updating = false; // Flag to prevent re-entrant calls
 
@@ -49,14 +49,14 @@ public class Game implements Observable.Observer {
         if (!isValidPosition(p)) {
             throw new IllegalArgumentException("Invalid position");
         }
-        return this.board[p.getRow() - 1][p.getCol() - 1];
+        return this.board[p.row() - 1][p.col() - 1];
     }
 
     private void setBoardNode(NodePosition position, GameNode node) {
         if (!isValidPosition(position)) {
             throw new IllegalArgumentException("Invalid position");
         }
-        this.board[position.getRow() - 1][position.getCol() - 1] = node;
+        this.board[position.row() - 1][position.col() - 1] = node;
         node.addObserver(this);
         if (logger != null) logger.logAction("N " + node);
     }
@@ -112,7 +112,7 @@ public class Game implements Observable.Observer {
             }
             // Update powerState of all nodes from Power
             if (powerPlaced != null) {
-                checkNode(new NodePosition(powerPlaced.getRow(), powerPlaced.getCol()), null);
+                checkNode(new NodePosition(powerPlaced.row(), powerPlaced.col()), null);
             } else {
                 throw new IllegalStateException("No power node placed");
             }
@@ -136,10 +136,10 @@ public class Game implements Observable.Observer {
             for (NodeSide side : NodeSide.values()) {
                 if (side != from && node.connects(side)) {
                     NodePosition newPosition = switch (side) {
-                        case NORTH -> new NodePosition(position.getRow() - 1, position.getCol());
-                        case EAST -> new NodePosition(position.getRow(), position.getCol() + 1);
-                        case SOUTH -> new NodePosition(position.getRow() + 1, position.getCol());
-                        case WEST -> new NodePosition(position.getRow(), position.getCol() - 1);
+                        case NORTH -> new NodePosition(position.row() - 1, position.col());
+                        case EAST -> new NodePosition(position.row(), position.col() + 1);
+                        case SOUTH -> new NodePosition(position.row() + 1, position.col());
+                        case WEST -> new NodePosition(position.row(), position.col() - 1);
                     };
                     checkNode(newPosition, side.opposite());
                 }
@@ -148,7 +148,7 @@ public class Game implements Observable.Observer {
     }
 
     private boolean isValidPosition(NodePosition position) {
-        return position.getRow() > 0 && position.getRow() <= rows && position.getCol() > 0 && position.getCol() <= cols;
+        return position.row() > 0 && position.row() <= rows && position.col() > 0 && position.col() <= cols;
     }
 
     public GameLogger logger() {

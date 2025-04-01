@@ -1,4 +1,4 @@
-package ija.project.ijaproject.common;
+package ija.project.ijaproject.game.node;
 
 public enum NodeType {
     BULB, LINK, POWER, EMPTY;

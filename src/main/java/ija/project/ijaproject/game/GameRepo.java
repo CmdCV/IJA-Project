@@ -1,16 +1,16 @@
 package ija.project.ijaproject.game;
 
-import ija.project.ijaproject.common.NodePosition;
-import ija.project.ijaproject.common.NodeSide;
-import ija.project.ijaproject.common.NodeType;
+import ija.project.ijaproject.game.node.NodePosition;
+import ija.project.ijaproject.game.node.NodeSide;
+import ija.project.ijaproject.game.node.NodeType;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import static ija.project.ijaproject.common.NodeSide.*;
-import static ija.project.ijaproject.common.NodeType.*;
+import static ija.project.ijaproject.game.node.NodeSide.*;
+import static ija.project.ijaproject.game.node.NodeType.*;
 
 public class GameRepo {
     private static final Map<String, Object[][]> PUZZLES = new HashMap<>();

@@ -1,6 +1,6 @@
-package ija.project.ijaproject.common;
+package ija.project.ijaproject.game.node;
 
-import ija.project.ijaproject.common.tool.AbstractObservable;
+import ija.project.ijaproject.common.AbstractObservable;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,7 +8,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static ija.project.ijaproject.common.NodeType.POWER;
+import static ija.project.ijaproject.game.node.NodeType.POWER;
 
 public class GameNode extends AbstractObservable {
     private final NodeType type;

@@ -1,7 +1,7 @@
 package ija.project.ijaproject;
 
-import ija.project.ijaproject.common.NodePosition;
-import ija.project.ijaproject.common.NodeSide;
+import ija.project.ijaproject.game.node.NodePosition;
+import ija.project.ijaproject.game.node.NodeSide;
 import ija.project.ijaproject.game.Game;
 import ija.project.ijaproject.game.GameRepo;
 import ija.project.ijaproject.view.BoardView;
@@ -25,20 +25,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-import static ija.project.ijaproject.common.NodeSide.*;
-
 public class GameApp extends Application {
-    // Game definitions for different difficulty levels
-    private static final Map<String, Object[][]> PUZZLES = new HashMap<>();
-
-    static {
-        // Easy puzzle
-        PUZZLES.put("Easy", new Object[][]{{"P", 2, 2, EAST, SOUTH}, {"L", 2, 3, WEST, EAST}, {"L", 2, 4, WEST, SOUTH}, {"L", 3, 4, NORTH, EAST}, {"L", 3, 5, WEST, SOUTH}, {"B", 4, 5, NORTH}});
-
-        // Medium puzzle
-        PUZZLES.put("Medium", new Object[][]{{"L", 4, 5, NORTH, EAST, SOUTH}, {"L", 5, 5, NORTH, EAST, WEST}, {"L", 5, 4, EAST, SOUTH}, {"L", 4, 6, EAST, SOUTH}, {"L", 5, 6, NORTH, SOUTH}, {"L", 3, 6, EAST, WEST}, {"L", 3, 4, EAST, WEST}, {"L", 5, 7, EAST, SOUTH}, {"B", 6, 4, NORTH}, {"B", 3, 3, NORTH}, {"B", 2, 6, SOUTH}, {"B", 4, 7, WEST}, {"P", 3, 5, EAST, SOUTH}});
-    }
-
     private Game game;
     private BoardView boardView;
     private BoardView infoView;
@@ -243,7 +230,7 @@ public class GameApp extends Application {
     private void loadGameFromLog() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Load Game Log");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Game Log Files", "*.glog"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Game Log Files", "*.log"));
 
         File file = fileChooser.showOpenDialog(null);
         if (file != null) {
@@ -263,7 +250,7 @@ public class GameApp extends Application {
                     NodePosition pos = NodePosition.fromString(logActions.get(1));
                     if (pos != null) {
                         // Create new game
-                        game = new Game(pos.getRow(), pos.getCol());
+                        game = new Game(pos.row(), pos.col());
 
                         // Process remaining actions
                         boolean generated = false;
@@ -299,14 +286,14 @@ public class GameApp extends Application {
         // Parse and execute the action based on its type
         String[] parts = action.split(" ", 2);
         String actionType = parts[0];
-        NodePosition pos = null;
+        NodePosition pos;
         switch (actionType) {
             case "G":
                 // Game initialization
                 if (parts.length > 1) {
                     pos = NodePosition.fromString(parts[1]);
                     if (pos != null) {
-                        game = new Game(pos.getRow(), pos.getCol());
+                        game = new Game(pos.row(), pos.col());
 
                         if (boardView != null) {
                             BorderPane root = (BorderPane) boardView.getParent();
