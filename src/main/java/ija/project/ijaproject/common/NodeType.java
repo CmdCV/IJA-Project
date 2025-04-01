@@ -1,6 +1,6 @@
 package ija.project.ijaproject.common;
 
-public enum Type {
+public enum NodeType {
     BULB, LINK, POWER, EMPTY;
 
     @Override

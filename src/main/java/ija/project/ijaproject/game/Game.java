@@ -1,9 +1,9 @@
 package ija.project.ijaproject.game;
 
 import ija.project.ijaproject.common.GameNode;
-import ija.project.ijaproject.common.Position;
-import ija.project.ijaproject.common.Side;
-import ija.project.ijaproject.common.Type;
+import ija.project.ijaproject.common.NodePosition;
+import ija.project.ijaproject.common.NodeSide;
+import ija.project.ijaproject.common.NodeType;
 import ija.project.ijaproject.common.tool.Observable;
 import ija.project.ijaproject.common.tool.ToolEnvironment;
 import ija.project.ijaproject.common.tool.ToolField;
@@ -12,7 +12,7 @@ public class Game implements ToolEnvironment, Observable.Observer {
     private final int rows;
     private final int cols;
     private final GameNode[][] board;
-    private Position powerPlaced = null;
+    private NodePosition powerPlaced = null;
     private boolean updating = false; // Flag to prevent re-entrant calls
     private GameLogger logger = null;
 
@@ -26,8 +26,8 @@ public class Game implements ToolEnvironment, Observable.Observer {
         // Initialize the board
         for (int i = 1; i <= rows; i++) {
             for (int j = 1; j <= cols; j++) {
-                Position position = new Position(i, j);
-                this.setBoardNode(position, new GameNode(position, Type.EMPTY));
+                NodePosition position = new NodePosition(i, j);
+                this.setBoardNode(position, new GameNode(position, NodeType.EMPTY));
             }
         }
         this.logger = logger;
@@ -45,7 +45,7 @@ public class Game implements ToolEnvironment, Observable.Observer {
     private void resetPowerStates() {
         for (int r = 1; r <= rows; r++) {
             for (int c = 1; c <= cols; c++) {
-                GameNode n = this.node(new Position(r, c));
+                GameNode n = this.node(new NodePosition(r, c));
                 if (n != null && !n.isPower()) {
                     n.setPowered(false);
                 }
@@ -53,7 +53,7 @@ public class Game implements ToolEnvironment, Observable.Observer {
         }
     }
 
-    public GameNode node(Position p) {
+    public GameNode node(NodePosition p) {
         if (!isValidPosition(p)) {
             throw new IllegalArgumentException("Invalid position");
         }
@@ -62,10 +62,10 @@ public class Game implements ToolEnvironment, Observable.Observer {
 
     @Override
     public ToolField fieldAt(int i, int i1) {
-        return this.node(new Position(i, i1));
+        return this.node(new NodePosition(i, i1));
     }
 
-    private void setBoardNode(Position position, GameNode node) {
+    private void setBoardNode(NodePosition position, GameNode node) {
         if (!isValidPosition(position)) {
             throw new IllegalArgumentException("Invalid position");
         }
@@ -74,12 +74,12 @@ public class Game implements ToolEnvironment, Observable.Observer {
         if (logger != null) logger.logAction("N " + node);
     }
 
-    private GameNode createNode(Position position, Type type, Side... sides) {
-        if (!isValidPosition(position) || (type == Type.LINK && sides.length < 2) || (type == Type.POWER && (sides.length < 1 || powerPlaced != null))) {
+    private GameNode createNode(NodePosition position, NodeType type, NodeSide... sides) {
+        if (!isValidPosition(position) || (type == NodeType.LINK && sides.length < 2) || (type == NodeType.POWER && (sides.length < 1 || powerPlaced != null))) {
             return null;
         }
         GameNode node = new GameNode(position, type, sides);
-        if (type == Type.POWER) {
+        if (type == NodeType.POWER) {
             node.setPowered(true);
             powerPlaced = position;
         }
@@ -87,28 +87,28 @@ public class Game implements ToolEnvironment, Observable.Observer {
         return node;
     }
 
-    public GameNode createBulbNode(Position position, Side side) {
-        return createNode(position, Type.BULB, side);
+    public GameNode createBulbNode(NodePosition position, NodeSide side) {
+        return createNode(position, NodeType.BULB, side);
     }
 
-    public GameNode createLinkNode(Position position, Side... sides) {
-        return createNode(position, Type.LINK, sides);
+    public GameNode createLinkNode(NodePosition position, NodeSide... sides) {
+        return createNode(position, NodeType.LINK, sides);
     }
 
-    public GameNode createPowerNode(Position position, Side... sides) {
-        return createNode(position, Type.POWER, sides);
+    public GameNode createPowerNode(NodePosition position, NodeSide... sides) {
+        return createNode(position, NodeType.POWER, sides);
     }
 
     public void init() {
         if (powerPlaced != null) {
-            checkNode(new Position(powerPlaced.getRow(), powerPlaced.getCol()), null);
+            checkNode(new NodePosition(powerPlaced.getRow(), powerPlaced.getCol()), null);
 //            System.out.print(this);
         } else {
             throw new IllegalStateException("No power node placed");
         }
     }
 
-    private void checkNode(Position position, Side from) {
+    private void checkNode(NodePosition position, NodeSide from) {
         // Check if the position is valid
         if (!isValidPosition(position)) {
             return;
@@ -120,13 +120,13 @@ public class Game implements ToolEnvironment, Observable.Observer {
             // Update powered state
             node.setPowered(true);
             // Continue checking adjacent nodes without going back to the previous one
-            for (Side side : Side.values()) {
+            for (NodeSide side : NodeSide.values()) {
                 if (side != from && node.containsConnector(side)) {
-                    Position newPosition = switch (side) {
-                        case NORTH -> new Position(position.getRow() - 1, position.getCol());
-                        case EAST -> new Position(position.getRow(), position.getCol() + 1);
-                        case SOUTH -> new Position(position.getRow() + 1, position.getCol());
-                        case WEST -> new Position(position.getRow(), position.getCol() - 1);
+                    NodePosition newPosition = switch (side) {
+                        case NORTH -> new NodePosition(position.getRow() - 1, position.getCol());
+                        case EAST -> new NodePosition(position.getRow(), position.getCol() + 1);
+                        case SOUTH -> new NodePosition(position.getRow() + 1, position.getCol());
+                        case WEST -> new NodePosition(position.getRow(), position.getCol() - 1);
                     };
                     checkNode(newPosition, side.opposite());
                 }
@@ -159,7 +159,7 @@ public class Game implements ToolEnvironment, Observable.Observer {
             // Append the left border
             sb.append("#");
             for (int c = 1; c <= cols; c++) {
-                GameNode node = this.node(new Position(r, c));
+                GameNode node = this.node(new NodePosition(r, c));
                 if (node == null) {
                     sb.append(" ");
                     continue;
@@ -177,7 +177,7 @@ public class Game implements ToolEnvironment, Observable.Observer {
         return sb.toString();
     }
 
-    private boolean isValidPosition(Position position) {
+    private boolean isValidPosition(NodePosition position) {
         return position.getRow() > 0 && position.getRow() <= rows && position.getCol() > 0 && position.getCol() <= cols;
     }
 }

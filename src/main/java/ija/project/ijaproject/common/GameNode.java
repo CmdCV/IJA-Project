@@ -8,42 +8,45 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GameNode extends AbstractObservableField {
-    private final Type type;
-    private final Position position;
-    private Set<Side> sides;
-    private final Set<Side> initialSides;
+    private final NodeType type;
+    private final NodePosition position;
+    private Set<NodeSide> sides;
+    private final Set<NodeSide> initialSides;
     private int turnCount = 0;
     private boolean isPowered = false;
 
-    public GameNode(Position position, Type type, Side... sides) {
+    public GameNode(NodePosition position, NodeType type, NodeSide... sides) {
         this.type = type;
         this.position = position;
-        this.sides = EnumSet.noneOf(Side.class);
+        this.sides = EnumSet.noneOf(NodeSide.class);
         Collections.addAll(this.sides, sides);
         this.initialSides = EnumSet.copyOf(this.sides);
         this.turnCount = 0;
     }
 
-    public boolean containsConnector(Side s) {
+    public boolean containsConnector(NodeSide s) {
         return this.sides.contains(s);
     }
 
-    public Position getPosition() {
+    public NodePosition getPosition() {
         return this.position;
     }
 
     public boolean isLink() {
-        return this.type == Type.LINK;
+        return this.type == NodeType.LINK;
     }
 
     public boolean isBulb() {
-        return this.type == Type.BULB;
+        return this.type == NodeType.BULB;
     }
 
     public boolean isPower() {
-        return this.type == Type.POWER;
+        return this.type == NodeType.POWER;
     }
 
+    public boolean isEmpty() {
+        return this.type == NodeType.EMPTY;
+    }
     public boolean light() {
         return this.isPowered;
     }
@@ -56,8 +59,8 @@ public class GameNode extends AbstractObservableField {
     }
 
     public void turn() {
-        Set<Side> newSides = EnumSet.noneOf(Side.class);
-        for (Side side : this.sides) {
+        Set<NodeSide> newSides = EnumSet.noneOf(NodeSide.class);
+        for (NodeSide side : this.sides) {
             newSides.add(side.next());
         }
         this.sides = newSides;
@@ -66,8 +69,8 @@ public class GameNode extends AbstractObservableField {
     }
 
     public void turnBack() {
-        Set<Side> newSides = EnumSet.noneOf(Side.class);
-        for (Side side : this.sides) {
+        Set<NodeSide> newSides = EnumSet.noneOf(NodeSide.class);
+        for (NodeSide side : this.sides) {
             newSides.add(side.previous());
         }
         this.sides = newSides;
@@ -79,15 +82,15 @@ public class GameNode extends AbstractObservableField {
         // Compare current sides with initial sides
         // For each possible rotation (0-3), check if rotating would match initial state
 
-        Set<Side> tempSides = EnumSet.copyOf(this.sides);
+        Set<NodeSide> tempSides = EnumSet.copyOf(this.sides);
         for (int i = 0; i < 4; i++) {
             if (sidesEquivalent(tempSides, initialSides)) {
                 return i;
             }
 
             // Rotate tempSides to check next position
-            Set<Side> rotatedSides = EnumSet.noneOf(Side.class);
-            for (Side side : tempSides) {
+            Set<NodeSide> rotatedSides = EnumSet.noneOf(NodeSide.class);
+            for (NodeSide side : tempSides) {
                 rotatedSides.add(side.next());
             }
             tempSides = rotatedSides;
@@ -97,7 +100,7 @@ public class GameNode extends AbstractObservableField {
         return 0;
     }
 
-    private boolean sidesEquivalent(Set<Side> sides1, Set<Side> sides2) {
+    private boolean sidesEquivalent(Set<NodeSide> sides1, Set<NodeSide> sides2) {
         if (sides1.size() != sides2.size()) {
             return false;
         }
@@ -106,28 +109,28 @@ public class GameNode extends AbstractObservableField {
 
     @Override
     public boolean north() {
-        return this.containsConnector(Side.NORTH);
+        return this.containsConnector(NodeSide.NORTH);
     }
 
     @Override
     public boolean east() {
-        return this.containsConnector(Side.EAST);
+        return this.containsConnector(NodeSide.EAST);
     }
 
     @Override
     public boolean south() {
-        return this.containsConnector(Side.SOUTH);
+        return this.containsConnector(NodeSide.SOUTH);
     }
 
     @Override
     public boolean west() {
-        return this.containsConnector(Side.WEST);
+        return this.containsConnector(NodeSide.WEST);
     }
 
     @Override
     public String toString() {
         final String connectorsStr = this.sides.stream()
-                .map(Side::name)
+                .map(NodeSide::name)
                 .collect(Collectors.joining(","));
         return String.format("{%s%s[%s]}", this.type, this.position, connectorsStr);
     }
@@ -146,10 +149,10 @@ public class GameNode extends AbstractObservableField {
     }
 
     public String getNodeSymbol() {
-        final boolean NORTH = this.containsConnector(Side.NORTH);
-        final boolean EAST = this.containsConnector(Side.EAST);
-        final boolean SOUTH = this.containsConnector(Side.SOUTH);
-        final boolean WEST = this.containsConnector(Side.WEST);
+        final boolean NORTH = this.containsConnector(NodeSide.NORTH);
+        final boolean EAST = this.containsConnector(NodeSide.EAST);
+        final boolean SOUTH = this.containsConnector(NodeSide.SOUTH);
+        final boolean WEST = this.containsConnector(NodeSide.WEST);
 
         char symbol = ' ';
         if (this.isBulb()) {

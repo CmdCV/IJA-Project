@@ -1,9 +1,11 @@
 package ija.project.ijaproject.game;
 
 import ija.project.ijaproject.common.tool.Observable;
+import javafx.stage.FileChooser;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,11 +32,26 @@ public class GameLogger implements Observable.Observer {
         position = log.size() - 1;
     }
 
-    public void loadLog(BufferedReader reader) throws IOException {
-        position = 0;
-        String line;
-        while ((line = reader.readLine()) != null) {
-            logAction(line);
+    public void save() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Game Log");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Game Log Files", "*.glog")
+        );
+
+        // Generate default filename with timestamp
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        fileChooser.setInitialFileName("game_" + timestamp + ".glog");
+
+        File file = fileChooser.showSaveDialog(null);
+        if (file != null) {
+            try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+                for (String action : this.log) {
+                    writer.println(action);
+                }
+            } catch (IOException e) {
+                System.err.println("Error saving game log: " + e.getMessage());
+            }
         }
     }
 
@@ -43,14 +60,17 @@ public class GameLogger implements Observable.Observer {
             position++;
         }
     }
+
     public void previous() {
         if (position > 0) {
             position--;
         }
     }
+
     public int position() {
         return position;
     }
+
     public List<String> log() {
         return log;
     }
@@ -62,6 +82,7 @@ public class GameLogger implements Observable.Observer {
     public void disable() {
         enabled = false;
     }
+
     public void enable() {
         enabled = true;
     }

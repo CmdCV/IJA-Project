@@ -1,12 +1,15 @@
 package ija.project.ijaproject;
 
-import ija.project.ijaproject.common.Position;
-import ija.project.ijaproject.common.Side;
-import static ija.project.ijaproject.common.Side.*;
+import ija.project.ijaproject.common.NodePosition;
+import ija.project.ijaproject.common.NodeSide;
+
+import static ija.project.ijaproject.common.NodeSide.*;
+
 import ija.project.ijaproject.game.Game;
 import ija.project.ijaproject.game.GameLogger;
 import ija.project.ijaproject.view.BoardView;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -14,6 +17,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -32,7 +36,7 @@ public class GameApp extends Application {
 
     static {
         // Easy puzzle
-        PUZZLES.put("Easy", new Object[][] {
+        PUZZLES.put("Easy", new Object[][]{
                 {"P", 2, 2, EAST, SOUTH},
                 {"L", 2, 3, WEST, EAST},
                 {"L", 2, 4, WEST, SOUTH},
@@ -42,7 +46,7 @@ public class GameApp extends Application {
         });
 
         // Medium puzzle
-        PUZZLES.put("Medium", new Object[][] {
+        PUZZLES.put("Medium", new Object[][]{
                 {"L", 4, 5, NORTH, EAST, SOUTH},
                 {"L", 5, 5, NORTH, EAST, WEST},
                 {"L", 5, 4, EAST, SOUTH},
@@ -93,7 +97,7 @@ public class GameApp extends Application {
         replayControls.setAlignment(Pos.CENTER);
 
         Button saveLogButton = new Button("Save Log");
-        saveLogButton.setOnAction(e -> saveGameLog());
+        saveLogButton.setOnAction(e -> logger.save());
 
         Button loadLogButton = new Button("Load Log");
         loadLogButton.setOnAction(e -> loadGameLog());
@@ -120,6 +124,8 @@ public class GameApp extends Application {
         stage.setTitle("IJA 2024/25: LightBulb");
         stage.setScene(scene);
         stage.show();
+
+        calculateAndSetMinimumSize(stage, boardView);
     }
 
     private void createGame(String difficulty) {
@@ -142,16 +148,16 @@ public class GameApp extends Application {
 
         // Create puzzle elements
         for (Object[] n : puzzle) {
-            String type = (String)n[0];
-            int row = (Integer)n[1];
-            int col = (Integer)n[2];
+            String type = (String) n[0];
+            int row = (Integer) n[1];
+            int col = (Integer) n[2];
 
-            Side[] sides = new Side[n.length-3];
+            NodeSide[] sides = new NodeSide[n.length - 3];
             for (int i = 3; i < n.length; i++) {
-                sides[i-3] = (Side)n[i];
+                sides[i - 3] = (NodeSide) n[i];
             }
 
-            Position p = new Position(row, col);
+            NodePosition p = new NodePosition(row, col);
             switch (type) {
                 case "L" -> game.createLinkNode(p, sides);
                 case "B" -> game.createBulbNode(p, sides[0]);
@@ -162,36 +168,29 @@ public class GameApp extends Application {
         game.init();
 
         // Randomly rotate pieces
-        randomizeRotations();
+        Random rand = new Random();
+        for (int row = 1; row <= game.rows(); row++) {
+            for (int col = 1; col <= game.cols(); col++) {
+                NodePosition pos = new NodePosition(row, col);
+                if (game.node(pos) != null && !game.node(pos).isEmpty()) {
+                    int rotations = rand.nextInt(4);
+                    for (int i = 0; i < rotations; i++) game.node(pos).turn();
+                }
+            }
+        }
 
         // Update the board view
         if (boardView != null) {
             BorderPane root = (BorderPane) boardView.getParent();
             boardView = new BoardView(game, false);
             root.setCenter(boardView);
+
+            if (boardView.getScene() != null) {
+                calculateAndSetMinimumSize((Stage) boardView.getScene().getWindow(), boardView);
+            }
         }
 
         statusLabel.setText("New game started - " + difficulty + " difficulty");
-    }
-
-    private void randomizeRotations() {
-        Random rand = new Random();
-
-        for (int row = 1; row <= game.rows(); row++) {
-            for (int col = 1; col <= game.cols(); col++) {
-                try {
-                    Position pos = new Position(row, col);
-                    if (game.node(pos) != null && !game.node(pos).isPower()) {
-                        int rotations = rand.nextInt(4);
-                        for (int i = 0; i < rotations; i++) {
-                            game.node(pos).turn();
-                        }
-                    }
-                } catch (Exception e) {
-                    // Skip invalid positions
-                }
-            }
-        }
     }
 
     private void showInfoView() {
@@ -208,31 +207,52 @@ public class GameApp extends Application {
             Scene infoScene = new Scene(infoRoot, 500, 550);
             infoStage.setScene(infoScene);
             infoStage.show();
+
+            calculateAndSetMinimumSize(infoStage, infoView);
         } else {
             infoStage.toFront();
         }
     }
-    public void saveGameLog() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Game Log");
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Game Log Files", "*.glog")
-        );
 
-        // Generate default filename with timestamp
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        fileChooser.setInitialFileName("game_" + timestamp + ".glog");
+    private void calculateAndSetMinimumSize(Stage stage, BoardView view) {
+        Platform.runLater(() -> {
+            // Get the actual size of the board view
+            double boardWidth = view.getBoundsInParent().getWidth();
+            double boardHeight = view.getBoundsInParent().getHeight();
 
-        File file = fileChooser.showSaveDialog(null);
-        if (file != null) {
-            try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
-                for (String action : logger.log()) {
-                    writer.println(action);
+            // Default padding
+            double paddingWidth = 40;
+            double paddingHeight = 60; // Extra padding for height
+
+            // For main view with controls
+            double controlsHeight = 0;
+            if (view.getParent() instanceof BorderPane) {
+                BorderPane parent = (BorderPane) view.getParent();
+                if (parent.getBottom() instanceof VBox) {
+                    VBox controls = (VBox) parent.getBottom();
+                    controlsHeight = controls.getBoundsInParent().getHeight();
                 }
-            } catch (IOException e) {
-                System.err.println("Error saving game log: " + e.getMessage());
             }
-        }
+
+            // Calculate minimum dimensions
+            double minWidth = boardWidth + paddingWidth;
+            double minHeight = boardHeight + controlsHeight + paddingHeight;
+
+            // Account for window decorations (title bar)
+            minHeight += 30;
+
+            // Set minimum window size
+            stage.setMinWidth(minWidth);
+            stage.setMinHeight(minHeight);
+
+            // If current size is smaller than minimum, resize
+            if (stage.getWidth() < minWidth) {
+                stage.setWidth(minWidth);
+            }
+            if (stage.getHeight() < minHeight) {
+                stage.setHeight(minHeight);
+            }
+        });
     }
 
     public void loadGameLog() {
@@ -257,7 +277,7 @@ public class GameApp extends Application {
                 // Process first game initialization command
                 String firstAction = logActions.get(0);
                 if (firstAction.equals("G")) {
-                    Position pos = Position.fromString(logActions.get(1));
+                    NodePosition pos = NodePosition.fromString(logActions.get(1));
                     if (pos != null) {
                         // Temporarily disable logging
                         logger.clear();
@@ -304,7 +324,8 @@ public class GameApp extends Application {
                     break;
                 case "T":
                     // Turn action - format is "T [row@col]"
-                    Position pos = Position.fromString(parts[1]);
+                    System.out.println(parts[0] + " " + parts[1]);
+                    NodePosition pos = NodePosition.fromString(parts[1]);
                     game.node(pos).turnBack();
                     logger.previous();
                     break;
@@ -327,7 +348,7 @@ public class GameApp extends Application {
                     break;
                 case "T":
                     // Turn action - format is "T [row@col]"
-                    Position pos = Position.fromString(parts[1]);
+                    NodePosition pos = NodePosition.fromString(parts[1]);
                     game.node(pos).turn();
                     break;
             }
@@ -341,15 +362,13 @@ public class GameApp extends Application {
         // Parse and execute the action based on its type
         String[] parts = action.split(" ", 2);
         String actionType = parts[0];
-        Position pos = null;
+        NodePosition pos = null;
 
-        System.out.println("ActionType: "+ actionType);
         switch (actionType) {
             case "G":
-                System.out.println("Game initialization: " + parts[1]);
                 // Game initialization
                 if (parts.length > 1) {
-                    pos = Position.fromString(parts[1]);
+                    pos = NodePosition.fromString(parts[1]);
                     if (pos != null) {
                         game = new Game(pos.getRow(), pos.getCol(), logger);
 
@@ -371,15 +390,13 @@ public class GameApp extends Application {
                 }
                 break;
             case "N":
-                System.out.println("Node creation: " + parts[1]);
                 // Node creation - will need to parse the node details and create it
                 parseAndCreateNode(parts[1]);
                 break;
             case "T":
-                System.out.println("Turn action: " + parts[1]);
                 // Turn action - format is "T [row@col]"
                 if (parts.length > 1) {
-                    pos = Position.fromString(parts[1]);
+                    pos = NodePosition.fromString(parts[1]);
                     if (pos != null) game.node(pos).turn();
                 }
                 break;
@@ -398,7 +415,7 @@ public class GameApp extends Application {
             int posStartIdx = nodeStr.indexOf('[');
             int posEndIdx = nodeStr.indexOf(']');
             String posStr = nodeStr.substring(posStartIdx, posEndIdx + 1);
-            Position position = Position.fromString(posStr);
+            NodePosition position = NodePosition.fromString(posStr);
 
             // Extract sides (between second [ and ])
             int sidesStartIdx = nodeStr.indexOf('[', posEndIdx + 1);
@@ -407,9 +424,9 @@ public class GameApp extends Application {
 
             // Parse sides
             String[] sideNames = sidesStr.split(",");
-            Side[] sides = new Side[sideNames.length];
+            NodeSide[] sides = new NodeSide[sideNames.length];
             for (int i = 0; i < sideNames.length; i++) {
-                sides[i] = Side.valueOf(sideNames[i]);
+                sides[i] = NodeSide.valueOf(sideNames[i]);
             }
 
             // Create node based on type
@@ -428,6 +445,7 @@ public class GameApp extends Application {
             System.err.println("Error parsing node: " + e.getMessage());
         }
     }
+
     public static void main(String[] args) {
         launch();
     }

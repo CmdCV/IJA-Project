@@ -1,16 +1,16 @@
 package ija.project.ijaproject.common;
 
-public enum Side {
+public enum NodeSide {
     NORTH, EAST, SOUTH, WEST;
 
-    public Side next() {
+    public NodeSide next() {
         return values()[(this.ordinal() + 1) % values().length];
     }
-    public Side previous() {
+    public NodeSide previous() {
         return values()[(this.ordinal() - 1 + values().length) % values().length];
     }
 
-    public Side opposite() {
+    public NodeSide opposite() {
         return values()[(this.ordinal() + 2) % values().length];
     }
 }
