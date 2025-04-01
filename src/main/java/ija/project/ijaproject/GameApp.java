@@ -249,8 +249,6 @@ public class GameApp extends Application {
                 if (firstAction.equals("G")) {
                     NodePosition pos = NodePosition.fromString(logActions.get(1));
                     if (pos != null) {
-                        // Create new game
-                        game = new Game(pos.row(), pos.col());
 
                         // Process remaining actions
                         boolean generated = false;
@@ -263,6 +261,8 @@ public class GameApp extends Application {
                                 generated = true;
                             }
                         }
+
+                        game.init();
 
                         // Update UI
                         if (boardView != null) {

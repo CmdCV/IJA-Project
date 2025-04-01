@@ -10,8 +10,7 @@ import ija.project.ijaproject.game.node.NodeType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ija.project.ijaproject.game.node.NodeType.BULB;
-import static ija.project.ijaproject.game.node.NodeType.POWER;
+import static ija.project.ijaproject.game.node.NodeType.*;
 
 public class Game extends AbstractObservable implements Observable.Observer {
     private final int rows;
@@ -60,6 +59,9 @@ public class Game extends AbstractObservable implements Observable.Observer {
     private void setBoardNode(NodePosition position, GameNode node) {
         if (!isValidPosition(position)) {
             throw new IllegalArgumentException("Invalid position");
+        }
+        if (node(position) != null && !node(position).is(EMPTY)) {
+            throw new IllegalArgumentException("Node already exists at position " + position);
         }
         this.board[position.row() - 1][position.col() - 1] = node;
         node.addObserver(this);
@@ -115,14 +117,18 @@ public class Game extends AbstractObservable implements Observable.Observer {
                 }
             }
             // Update powerState of all nodes from Power
-            if (powerPlaced != null && !bulbs.isEmpty()) {
-                checkNode(new NodePosition(powerPlaced.row(), powerPlaced.col()), null);
-                notifyObservers(null);
-            } else {
-                throw new IllegalStateException("No power node placed");
-            }
+            init();
         } finally {
             updating = false;
+        }
+    }
+
+    public void init() {
+        if (powerPlaced != null && !bulbs.isEmpty()) {
+            checkNode(new NodePosition(powerPlaced.row(), powerPlaced.col()), null);
+            notifyObservers(null);
+        } else {
+            throw new IllegalStateException("No power node placed");
         }
     }
 

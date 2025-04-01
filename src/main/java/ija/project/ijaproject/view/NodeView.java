@@ -71,24 +71,28 @@ public class NodeView extends Pane implements Observable.Observer {
 
         if (node.connects(NORTH)) {
             Line line = new Line(centerX, 0, centerX, centerY);
+            line.setStrokeWidth(height / 10);
             line.setStroke(color);
             this.getChildren().add(line);
         }
 
         if (node.connects(EAST)) {
             Line line = new Line(width, centerY, centerX, centerY);
+            line.setStrokeWidth(height / 10);
             line.setStroke(color);
             this.getChildren().add(line);
         }
 
         if (node.connects(SOUTH)) {
             Line line = new Line(centerX, height, centerX, centerY);
+            line.setStrokeWidth(height / 10);
             line.setStroke(color);
             this.getChildren().add(line);
         }
 
         if (node.connects(WEST)) {
             Line line = new Line(0, centerY, centerX, centerY);
+            line.setStrokeWidth(height / 10);
             line.setStroke(color);
             this.getChildren().add(line);
         }
