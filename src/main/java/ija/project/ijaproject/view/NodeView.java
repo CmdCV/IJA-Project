@@ -29,14 +29,12 @@ public class NodeView extends Pane implements Observable.Observer {
         this.setStyle("-fx-border-color: gray;");
         this.setPrefSize(size, size);
         this.setMinSize(size, size);  // Ensure minimum size
+
         if (!this.infoView) {
             this.setOnMouseClicked(event -> {
                 if(!game.isComplete()) node.turn(true);
             });
         }
-        game.addObserver(this);
-        node.addObserver(this);
-
         // Add a layout listener to update view once component is sized
         this.widthProperty().addListener((obs, oldVal, newVal) -> {
             if (!initialLayoutDone && newVal.doubleValue() > 0) {
@@ -44,6 +42,8 @@ public class NodeView extends Pane implements Observable.Observer {
                 updateView();
             }
         });
+        game.addObserver(this);
+        node.addObserver(this);
     }
 
     @Override

@@ -24,7 +24,6 @@ public class GameNode extends AbstractObservable {
         this.sides = EnumSet.noneOf(NodeSide.class);
         Collections.addAll(this.sides, sides);
         this.initialSides = EnumSet.copyOf(this.sides);
-        this.turnCount = 0;
         if (is(POWER)) this.isPowered = true;
     }
 
