@@ -5,16 +5,17 @@ import ija.project.ijaproject.common.NodePosition;
 import ija.project.ijaproject.common.NodeSide;
 import ija.project.ijaproject.common.NodeType;
 import ija.project.ijaproject.common.tool.Observable;
-import ija.project.ijaproject.common.tool.ToolEnvironment;
-import ija.project.ijaproject.common.tool.ToolField;
 
-public class Game implements ToolEnvironment, Observable.Observer {
+import static ija.project.ijaproject.common.NodeType.BULB;
+import static ija.project.ijaproject.common.NodeType.POWER;
+
+public class Game implements Observable.Observer {
     private final int rows;
     private final int cols;
     private final GameNode[][] board;
+    private GameLogger logger = null;
     private NodePosition powerPlaced = null;
     private boolean updating = false; // Flag to prevent re-entrant calls
-    private GameLogger logger = null;
 
     public Game(int rows, int cols) {
         if (rows < 1 || cols < 1) {
@@ -30,6 +31,7 @@ public class Game implements ToolEnvironment, Observable.Observer {
                 this.setBoardNode(position, new GameNode(position, NodeType.EMPTY));
             }
         }
+        // Initialize the Logger
         this.logger = new GameLogger();
         this.logger.clear();
         this.logger.logAction("G [" + rows + "@" + cols + "]");
@@ -43,27 +45,11 @@ public class Game implements ToolEnvironment, Observable.Observer {
         return this.cols;
     }
 
-    private void resetPowerStates() {
-        for (int r = 1; r <= rows; r++) {
-            for (int c = 1; c <= cols; c++) {
-                GameNode n = this.node(new NodePosition(r, c));
-                if (n != null && !n.isPower()) {
-                    n.setPowered(false);
-                }
-            }
-        }
-    }
-
     public GameNode node(NodePosition p) {
         if (!isValidPosition(p)) {
             throw new IllegalArgumentException("Invalid position");
         }
         return this.board[p.getRow() - 1][p.getCol() - 1];
-    }
-
-    @Override
-    public ToolField fieldAt(int i, int i1) {
-        return this.node(new NodePosition(i, i1));
     }
 
     private void setBoardNode(NodePosition position, GameNode node) {
@@ -76,20 +62,17 @@ public class Game implements ToolEnvironment, Observable.Observer {
     }
 
     private GameNode createNode(NodePosition position, NodeType type, NodeSide... sides) {
-        if (!isValidPosition(position) || (type == NodeType.LINK && sides.length < 2) || (type == NodeType.POWER && (sides.length < 1 || powerPlaced != null))) {
+        if (!isValidPosition(position) || (type == NodeType.LINK && sides.length < 2) || (type == POWER && (sides.length < 1 || powerPlaced != null))) {
             return null;
         }
         GameNode node = new GameNode(position, type, sides);
-        if (type == NodeType.POWER) {
-            node.setPowered(true);
-            powerPlaced = position;
-        }
+        if (type == POWER) powerPlaced = position;
         this.setBoardNode(position, node);
         return node;
     }
 
     public GameNode createBulbNode(NodePosition position, NodeSide side) {
-        return createNode(position, NodeType.BULB, side);
+        return createNode(position, BULB, side);
     }
 
     public GameNode createLinkNode(NodePosition position, NodeSide... sides) {
@@ -97,15 +80,44 @@ public class Game implements ToolEnvironment, Observable.Observer {
     }
 
     public GameNode createPowerNode(NodePosition position, NodeSide... sides) {
-        return createNode(position, NodeType.POWER, sides);
+        return createNode(position, POWER, sides);
     }
 
-    public void init() {
-        if (powerPlaced != null) {
-            checkNode(new NodePosition(powerPlaced.getRow(), powerPlaced.getCol()), null);
-//            System.out.print(this);
-        } else {
-            throw new IllegalStateException("No power node placed");
+    public boolean isComplete() {
+        for (int r = 1; r <= rows; r++) {
+            for (int c = 1; c <= cols; c++) {
+                GameNode n = this.node(new NodePosition(r, c));
+                if (n != null && n.is(BULB)) {
+                    if (!n.isPowered()) return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void update(Observable o, String event) {
+        if (event != null) logger.logAction(event);
+        if (updating) return; // Prevent re-entrant calls
+        updating = true;
+        try {
+            // Reset powerState of all nodes
+            for (int r = 1; r <= rows; r++) {
+                for (int c = 1; c <= cols; c++) {
+                    GameNode node = this.node(new NodePosition(r, c));
+                    if (node != null && !node.is(POWER)) {
+                        node.setPower(false);
+                    }
+                }
+            }
+            // Update powerState of all nodes from Power
+            if (powerPlaced != null) {
+                checkNode(new NodePosition(powerPlaced.getRow(), powerPlaced.getCol()), null);
+            } else {
+                throw new IllegalStateException("No power node placed");
+            }
+        } finally {
+            updating = false;
         }
     }
 
@@ -117,12 +129,12 @@ public class Game implements ToolEnvironment, Observable.Observer {
         // Get the node at the current position
         GameNode node = this.node(position);
         // Check if the node can be powered and is not already powered to prevent infinite loop
-        if (from == null || (node.containsConnector(from) && !node.light())) {
+        if (from == null || (node.connects(from) && !node.isPowered())) {
             // Update powered state
-            node.setPowered(true);
+            node.setPower(true);
             // Continue checking adjacent nodes without going back to the previous one
             for (NodeSide side : NodeSide.values()) {
-                if (side != from && node.containsConnector(side)) {
+                if (side != from && node.connects(side)) {
                     NodePosition newPosition = switch (side) {
                         case NORTH -> new NodePosition(position.getRow() - 1, position.getCol());
                         case EAST -> new NodePosition(position.getRow(), position.getCol() + 1);
@@ -133,61 +145,6 @@ public class Game implements ToolEnvironment, Observable.Observer {
                 }
             }
         }
-    }
-
-    @Override
-    public void update(Observable node, String event) {
-        if (event != null) logger.logAction(event);
-        if (updating) return; // Prevent re-entrant calls
-        updating = true;
-        try {
-            resetPowerStates();
-            init();
-        } finally {
-            updating = false;
-        }
-    }
-
-    public boolean isComplete() {
-        for (int r = 1; r <= rows; r++) {
-            for (int c = 1; c <= cols; c++) {
-                GameNode n = this.node(new NodePosition(r, c));
-                if (n != null && n.isBulb()) {
-                    if (!n.light()) return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        // Append the top border
-        for (int c = 0; c <= cols + 1; c++) {
-            sb.append("#");
-        }
-        sb.append("\n");
-        for (int r = 1; r <= rows; r++) {
-            // Append the left border
-            sb.append("#");
-            for (int c = 1; c <= cols; c++) {
-                GameNode node = this.node(new NodePosition(r, c));
-                if (node == null) {
-                    sb.append(" ");
-                    continue;
-                }
-                sb.append(node.getNodeSymbol());
-            }
-            // Append the right border
-            sb.append("#\n");
-        }
-        // Append the bottom border
-        for (int c = 0; c <= cols + 1; c++) {
-            sb.append("#");
-        }
-        sb.append("\n");
-        return sb.toString();
     }
 
     private boolean isValidPosition(NodePosition position) {

@@ -2,11 +2,7 @@ package ija.project.ijaproject;
 
 import ija.project.ijaproject.common.NodePosition;
 import ija.project.ijaproject.common.NodeSide;
-
-import static ija.project.ijaproject.common.NodeSide.*;
-
 import ija.project.ijaproject.game.Game;
-import ija.project.ijaproject.game.GameLogger;
 import ija.project.ijaproject.game.GameRepo;
 import ija.project.ijaproject.view.BoardView;
 import javafx.application.Application;
@@ -14,51 +10,43 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
+import static ija.project.ijaproject.common.NodeSide.*;
+
 public class GameApp extends Application {
+    // Game definitions for different difficulty levels
+    private static final Map<String, Object[][]> PUZZLES = new HashMap<>();
+
+    static {
+        // Easy puzzle
+        PUZZLES.put("Easy", new Object[][]{{"P", 2, 2, EAST, SOUTH}, {"L", 2, 3, WEST, EAST}, {"L", 2, 4, WEST, SOUTH}, {"L", 3, 4, NORTH, EAST}, {"L", 3, 5, WEST, SOUTH}, {"B", 4, 5, NORTH}});
+
+        // Medium puzzle
+        PUZZLES.put("Medium", new Object[][]{{"L", 4, 5, NORTH, EAST, SOUTH}, {"L", 5, 5, NORTH, EAST, WEST}, {"L", 5, 4, EAST, SOUTH}, {"L", 4, 6, EAST, SOUTH}, {"L", 5, 6, NORTH, SOUTH}, {"L", 3, 6, EAST, WEST}, {"L", 3, 4, EAST, WEST}, {"L", 5, 7, EAST, SOUTH}, {"B", 6, 4, NORTH}, {"B", 3, 3, NORTH}, {"B", 2, 6, SOUTH}, {"B", 4, 7, WEST}, {"P", 3, 5, EAST, SOUTH}});
+    }
+
     private Game game;
     private BoardView boardView;
     private BoardView infoView;
     private Stage infoStage;
     private Label statusLabel;
 
-    // Game definitions for different difficulty levels
-    private static final Map<String, Object[][]> PUZZLES = new HashMap<>();
-
-    static {
-        // Easy puzzle
-        PUZZLES.put("Easy", new Object[][]{
-                {"P", 2, 2, EAST, SOUTH},
-                {"L", 2, 3, WEST, EAST},
-                {"L", 2, 4, WEST, SOUTH},
-                {"L", 3, 4, NORTH, EAST},
-                {"L", 3, 5, WEST, SOUTH},
-                {"B", 4, 5, NORTH}
-        });
-
-        // Medium puzzle
-        PUZZLES.put("Medium", new Object[][]{
-                {"L", 4, 5, NORTH, EAST, SOUTH},
-                {"L", 5, 5, NORTH, EAST, WEST},
-                {"L", 5, 4, EAST, SOUTH},
-                {"L", 4, 6, EAST, SOUTH},
-                {"L", 5, 6, NORTH, SOUTH},
-                {"L", 3, 6, EAST, WEST},
-                {"L", 3, 4, EAST, WEST},
-                {"L", 5, 7, EAST, SOUTH},
-                {"B", 6, 4, NORTH},
-                {"B", 3, 3, NORTH},
-                {"B", 2, 6, SOUTH},
-                {"B", 4, 7, WEST},
-                {"P", 3, 5, EAST, SOUTH}
-        });
+    public static void main(String[] args) {
+        launch();
     }
 
     @Override
@@ -184,10 +172,8 @@ public class GameApp extends Application {
 
             // For main view with controls
             double controlsHeight = 0;
-            if (view.getParent() instanceof BorderPane) {
-                BorderPane parent = (BorderPane) view.getParent();
-                if (parent.getBottom() instanceof VBox) {
-                    VBox controls = (VBox) parent.getBottom();
+            if (view.getParent() instanceof BorderPane parent) {
+                if (parent.getBottom() instanceof VBox controls) {
                     controlsHeight = controls.getBoundsInParent().getHeight();
                 }
             }
@@ -214,31 +200,28 @@ public class GameApp extends Application {
     }
 
     private void replayPreviousMove() {
-        if (this.game.logger().position() > 0 && game != null) {
-            this.game.logger().disable();
-            String[] parts = this.game.logger().getLine().split(" ", 2);
-            switch (parts[0]) {
-                case "G":
-                    // Game initialization - Cannot be undone
-                    break;
-                case "N":
-                    // Node creation - Cannot be undone
-                    break;
-                case "T":
-                    // Turn action - format is "T [row@col]"
-                    NodePosition pos = NodePosition.fromString(parts[1]);
-                    game.node(pos).turnBack(true);
-                    this.game.logger().previous();
-                    break;
-            }
-            this.game.logger().enable();
+        this.game.logger().disable();
+        String[] parts = this.game.logger().getLine().split(" ", 2);
+        switch (parts[0]) {
+            case "G":
+                // Game initialization - Cannot be undone
+                break;
+            case "N":
+                // Node creation - Cannot be undone
+                break;
+            case "T":
+                // Turn action - format is "T [row@col]"
+                NodePosition pos = NodePosition.fromString(parts[1]);
+                game.node(pos).turnBack(true);
+                this.game.logger().previous();
+                break;
         }
+        this.game.logger().enable();
     }
 
     private void replayNextMove() {
-        if (this.game.logger().position() < this.game.logger().log().size() - 1 && game != null) {
-            this.game.logger().disable();
-            this.game.logger().next();
+        this.game.logger().disable();
+        if (this.game.logger().next()) {
             String[] parts = this.game.logger().getLine().split(" ", 2);
             switch (parts[0]) {
                 case "G":
@@ -253,16 +236,14 @@ public class GameApp extends Application {
                     game.node(pos).turn(true);
                     break;
             }
-            this.game.logger().enable();
         }
+        this.game.logger().enable();
     }
 
     private void loadGameFromLog() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Load Game Log");
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Game Log Files", "*.glog")
-        );
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Game Log Files", "*.glog"));
 
         File file = fileChooser.showOpenDialog(null);
         if (file != null) {
@@ -281,9 +262,6 @@ public class GameApp extends Application {
                 if (firstAction.equals("G")) {
                     NodePosition pos = NodePosition.fromString(logActions.get(1));
                     if (pos != null) {
-                        // Temporarily disable logging
-                        this.game.logger().clear();
-
                         // Create new game
                         game = new Game(pos.getRow(), pos.getCol());
 
@@ -298,8 +276,6 @@ public class GameApp extends Application {
                                 generated = true;
                             }
                         }
-
-                        game.init();
 
                         // Update UI
                         if (boardView != null) {
@@ -324,7 +300,6 @@ public class GameApp extends Application {
         String[] parts = action.split(" ", 2);
         String actionType = parts[0];
         NodePosition pos = null;
-        System.out.println(actionType);
         switch (actionType) {
             case "G":
                 // Game initialization
@@ -407,9 +382,5 @@ public class GameApp extends Application {
         } catch (Exception e) {
             System.err.println("Error parsing node: " + e.getMessage());
         }
-    }
-
-    public static void main(String[] args) {
-        launch();
     }
 }

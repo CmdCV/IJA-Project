@@ -12,7 +12,7 @@ public interface Observable {
 
     void notifyObservers(String log);
 
-    public interface Observer {
+    interface Observer {
         void update(Observable var1, String log);
     }
 }

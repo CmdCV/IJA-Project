@@ -13,17 +13,14 @@ import static ija.project.ijaproject.common.NodeSide.*;
 import static ija.project.ijaproject.common.NodeType.*;
 
 public class GameRepo {
-    // Game definitions for different difficulty levels
     private static final Map<String, Object[][]> PUZZLES = new HashMap<>();
     private static final Map<String, int[]> BOARD_SIZES = new HashMap<>();
 
     static {
-        // Board sizes (rows, cols)
         BOARD_SIZES.put("Easy", new int[]{8, 8});
         BOARD_SIZES.put("Medium", new int[]{12, 12});
         BOARD_SIZES.put("Hard", new int[]{16, 16});
 
-        // Easy puzzle
         PUZZLES.put("Easy", new Object[][]{
                 {POWER, 2, 2, EAST, SOUTH},
                 {LINK, 2, 3, WEST, EAST},
@@ -70,7 +67,6 @@ public class GameRepo {
 
         Game game = new Game(rows, cols);
 
-        // Create puzzle elements
         for (Object[] n : puzzle) {
             NodeType type = (NodeType) n[0];
             int row = (Integer) n[1];
@@ -81,17 +77,14 @@ public class GameRepo {
                 sides[i - 3] = (NodeSide) n[i];
             }
 
-            NodePosition p = new NodePosition(row, col);
+            NodePosition position = new NodePosition(row, col);
             switch (type) {
-                case LINK -> game.createLinkNode(p, sides);
-                case BULB -> game.createBulbNode(p, sides[0]);
-                case POWER -> game.createPowerNode(p, sides);
+                case LINK -> game.createLinkNode(position, sides);
+                case BULB -> game.createBulbNode(position, sides[0]);
+                case POWER -> game.createPowerNode(position, sides);
             }
         }
 
-        game.init();
-
-        // Randomly rotate pieces
         randomizeRotations(game);
 
         game.logger().logAction("Gen finished");
@@ -99,15 +92,12 @@ public class GameRepo {
         return game;
     }
 
-    /**
-     * Randomly rotates pieces in the game
-     */
     private static void randomizeRotations(Game game) {
         Random rand = new Random();
         for (int row = 1; row <= game.rows(); row++) {
             for (int col = 1; col <= game.cols(); col++) {
                 NodePosition pos = new NodePosition(row, col);
-                if (game.node(pos) != null && !game.node(pos).isEmpty()) {
+                if (game.node(pos) != null && !game.node(pos).is(EMPTY)) {
                     int rotations = rand.nextInt(4);
                     for (int i = 0; i < rotations; i++) game.node(pos).turn(false);
                 }
@@ -115,9 +105,6 @@ public class GameRepo {
         }
     }
 
-    /**
-     * Gets available puzzle names
-     */
     public static Set<String> getAvailablePuzzles() {
         return PUZZLES.keySet();
     }

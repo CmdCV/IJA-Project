@@ -3,14 +3,17 @@ package ija.project.ijaproject.game;
 import ija.project.ijaproject.common.tool.Observable;
 import javafx.stage.FileChooser;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameLogger implements Observable.Observer {
-    private List<String> log = new ArrayList<>();
+    private final List<String> log = new ArrayList<>();
     private int position = 0;
     private boolean enabled = true;
 
@@ -30,6 +33,15 @@ public class GameLogger implements Observable.Observer {
         }
         log.add(description);
         position = log.size() - 1;
+    }
+
+    public void clear() {
+        this.log.clear();
+        this.position = 0;
+    }
+
+    public String getLine() {
+        return log.get(position);
     }
 
     public void save() {
@@ -55,28 +67,20 @@ public class GameLogger implements Observable.Observer {
         }
     }
 
-    public void next() {
-        if (position < log.size() - 1) {
-            position++;
-        }
-    }
-
-    public void previous() {
+    public boolean previous() {
         if (position > 0) {
             position--;
+            return true;
         }
+        return false;
     }
 
-    public int position() {
-        return position;
-    }
-
-    public List<String> log() {
-        return log;
-    }
-
-    public String getLine() {
-        return log.get(position);
+    public boolean next() {
+        if (position < log.size() - 1) {
+            position++;
+            return true;
+        }
+        return false;
     }
 
     public void disable() {
@@ -87,8 +91,4 @@ public class GameLogger implements Observable.Observer {
         enabled = true;
     }
 
-
-    public void clear() {
-        this.log.clear();
-    }
 }

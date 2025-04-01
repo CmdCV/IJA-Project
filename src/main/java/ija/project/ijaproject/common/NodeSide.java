@@ -6,6 +6,7 @@ public enum NodeSide {
     public NodeSide next() {
         return values()[(this.ordinal() + 1) % values().length];
     }
+
     public NodeSide previous() {
         return values()[(this.ordinal() - 1 + values().length) % values().length];
     }

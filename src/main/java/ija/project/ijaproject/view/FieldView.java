@@ -2,7 +2,6 @@ package ija.project.ijaproject.view;
 
 import ija.project.ijaproject.common.GameNode;
 import ija.project.ijaproject.common.tool.Observable;
-import ija.project.ijaproject.common.tool.ToolField;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
@@ -13,12 +12,16 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 
+import static ija.project.ijaproject.common.NodeSide.*;
+import static ija.project.ijaproject.common.NodeType.BULB;
+import static ija.project.ijaproject.common.NodeType.POWER;
+
 public class FieldView extends Pane implements Observable.Observer {
-    private final ToolField field;
+    private final GameNode field;
     private final boolean infoView;
     private boolean initialLayoutDone = false;
 
-    public FieldView(final ToolField field, boolean infoView, int size) {
+    public FieldView(final GameNode field, boolean infoView, int size) {
         this.field = field;
         this.infoView = infoView;
         this.setStyle("-fx-border-color: gray;");
@@ -59,35 +62,35 @@ public class FieldView extends Pane implements Observable.Observer {
 
         double centerX = width / 2;
         double centerY = height / 2;
-        Color color = field.light() ? Color.RED : Color.BLACK;
+        Color color = field.isPowered() ? Color.RED : Color.BLACK;
 
-        if (field.north()) {
+        if (field.connects(NORTH)) {
             Line line = new Line(centerX, 0, centerX, centerY);
             line.setStroke(color);
             this.getChildren().add(line);
         }
 
-        if (field.east()) {
+        if (field.connects(EAST)) {
             Line line = new Line(width, centerY, centerX, centerY);
             line.setStroke(color);
             this.getChildren().add(line);
         }
 
-        if (field.south()) {
+        if (field.connects(SOUTH)) {
             Line line = new Line(centerX, height, centerX, centerY);
             line.setStroke(color);
             this.getChildren().add(line);
         }
 
-        if (field.west()) {
+        if (field.connects(WEST)) {
             Line line = new Line(0, centerY, centerX, centerY);
             line.setStroke(color);
             this.getChildren().add(line);
         }
 
-        if (field.isPower()) {
+        if (field.is(POWER)) {
             this.setStyle("-fx-background-color: green; -fx-border-color: gray;");
-        } else if (field.isBulb()) {
+        } else if (field.is(BULB)) {
             Circle circle = new Circle(centerX, centerY, Math.min(width, height) / 2 - 5);
             circle.setFill(color);
             this.getChildren().add(circle);
@@ -95,22 +98,22 @@ public class FieldView extends Pane implements Observable.Observer {
 
         // Add turn count information in info view mode
         if (infoView && field instanceof GameNode) {
-            GameNode node = (GameNode) field;
+            GameNode node = field;
             int turnsNeeded = node.turnsToInitialState();
 
             // Only show if turns are needed
             if (turnsNeeded > 0) {
                 Label turnLabel = new Label(String.valueOf(turnsNeeded));
                 turnLabel.setTextFill(Color.WHITE);
-                turnLabel.setFont(Font.font("System", FontWeight.BOLD, height*0.33));
+                turnLabel.setFont(Font.font("System", FontWeight.BOLD, height * 0.33));
                 turnLabel.setTextAlignment(TextAlignment.CENTER);
 
                 // Center the label
-                turnLabel.setLayoutX(centerX - (height*0.1));
-                turnLabel.setLayoutY(centerY - (height*0.2));
+                turnLabel.setLayoutX(centerX - (height * 0.1));
+                turnLabel.setLayoutY(centerY - (height * 0.2));
 
                 // Add a background circle to make text more visible
-                Circle background = new Circle(centerX, centerY, height*0.25);
+                Circle background = new Circle(centerX, centerY, height * 0.25);
                 background.setFill(Color.rgb(0, 0, 0, 0.7));
 
                 this.getChildren().addAll(background, turnLabel);

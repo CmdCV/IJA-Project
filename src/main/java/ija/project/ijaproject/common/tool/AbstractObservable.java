@@ -8,17 +8,17 @@ package ija.project.ijaproject.common.tool;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class AbstractObservableField implements ToolField {
-    private final Set<Observable.Observer> observers = new HashSet();
+public abstract class AbstractObservable implements Observable {
+    private final Set<Observer> observers = new HashSet();
 
-    public AbstractObservableField() {
+    public AbstractObservable() {
     }
 
-    public void addObserver(Observable.Observer var1) {
+    public void addObserver(Observer var1) {
         this.observers.add(var1);
     }
 
-    public void removeObserver(Observable.Observer var1) {
+    public void removeObserver(Observer var1) {
         this.observers.remove(var1);
     }
 
