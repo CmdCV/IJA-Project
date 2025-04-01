@@ -34,4 +34,16 @@ public class Position {
     public String toString() {
         return String.format("[%d@%d]", this.getRow(), this.getCol());
     }
+
+    public static Position fromString(String str) {
+        try {
+            str = str.replace("[", "").replace("]", "");
+            String[] coords = str.split("@");
+            int row = Integer.parseInt(coords[0]);
+            int col = Integer.parseInt(coords[1]);
+            return new Position(row, col);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

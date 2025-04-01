@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public class GameApplication extends Application {
+public class GameApp extends Application {
     private Game game;
     private GameLogger logger = new GameLogger();
     private BoardView boardView;
@@ -257,7 +257,7 @@ public class GameApplication extends Application {
                 // Process first game initialization command
                 String firstAction = logActions.get(0);
                 if (firstAction.equals("G")) {
-                    Position pos = parsePosition(logActions.get(1));
+                    Position pos = Position.fromString(logActions.get(1));
                     if (pos != null) {
                         // Temporarily disable logging
                         logger.clear();
@@ -304,7 +304,7 @@ public class GameApplication extends Application {
                     break;
                 case "T":
                     // Turn action - format is "T [row@col]"
-                    Position pos = parsePosition(parts[1]);
+                    Position pos = Position.fromString(parts[1]);
                     game.node(pos).turnBack();
                     logger.previous();
                     break;
@@ -327,7 +327,7 @@ public class GameApplication extends Application {
                     break;
                 case "T":
                     // Turn action - format is "T [row@col]"
-                    Position pos = parsePosition(parts[1]);
+                    Position pos = Position.fromString(parts[1]);
                     game.node(pos).turn();
                     break;
             }
@@ -349,7 +349,7 @@ public class GameApplication extends Application {
                 System.out.println("Game initialization: " + parts[1]);
                 // Game initialization
                 if (parts.length > 1) {
-                    pos = parsePosition(parts[1]);
+                    pos = Position.fromString(parts[1]);
                     if (pos != null) {
                         game = new Game(pos.getRow(), pos.getCol(), logger);
 
@@ -379,23 +379,10 @@ public class GameApplication extends Application {
                 System.out.println("Turn action: " + parts[1]);
                 // Turn action - format is "T [row@col]"
                 if (parts.length > 1) {
-                    pos = parsePosition(parts[1]);
+                    pos = Position.fromString(parts[1]);
                     if (pos != null) game.node(pos).turn();
                 }
                 break;
-        }
-    }
-
-    private Position parsePosition(String posStr) {
-        // Parse position format "[row@col]"
-        try {
-            posStr = posStr.replace("[", "").replace("]", "");
-            String[] coords = posStr.split("@");
-            int row = Integer.parseInt(coords[0]);
-            int col = Integer.parseInt(coords[1]);
-            return new Position(row, col);
-        } catch (Exception e) {
-            return null;
         }
     }
 
@@ -411,7 +398,7 @@ public class GameApplication extends Application {
             int posStartIdx = nodeStr.indexOf('[');
             int posEndIdx = nodeStr.indexOf(']');
             String posStr = nodeStr.substring(posStartIdx, posEndIdx + 1);
-            Position position = parsePosition(posStr);
+            Position position = Position.fromString(posStr);
 
             // Extract sides (between second [ and ])
             int sidesStartIdx = nodeStr.indexOf('[', posEndIdx + 1);
