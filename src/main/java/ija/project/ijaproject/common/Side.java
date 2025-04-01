@@ -6,6 +6,9 @@ public enum Side {
     public Side next() {
         return values()[(this.ordinal() + 1) % values().length];
     }
+    public Side previous() {
+        return values()[(this.ordinal() - 1 + values().length) % values().length];
+    }
 
     public Side opposite() {
         return values()[(this.ordinal() + 2) % values().length];

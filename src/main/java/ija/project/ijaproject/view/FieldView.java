@@ -120,7 +120,7 @@ public class FieldView extends Pane implements Observable.Observer {
     }
 
     @Override
-    public void update(Observable observable) {
+    public void update(Observable observable, String event) {
         ++this.changedModel;
         Platform.runLater(this::updateView);
     }

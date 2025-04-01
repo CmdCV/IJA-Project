@@ -22,7 +22,7 @@ public abstract class AbstractObservableField implements ToolField {
         this.observers.remove(var1);
     }
 
-    public void notifyObservers() {
-        this.observers.forEach((var1) -> var1.update(this));
+    public void notifyObservers(String log) {
+        this.observers.forEach((var1) -> var1.update(this, log));
     }
 }

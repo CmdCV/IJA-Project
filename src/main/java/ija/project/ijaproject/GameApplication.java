@@ -4,6 +4,7 @@ import ija.project.ijaproject.common.Position;
 import ija.project.ijaproject.common.Side;
 import static ija.project.ijaproject.common.Side.*;
 import ija.project.ijaproject.game.Game;
+import ija.project.ijaproject.game.GameLogger;
 import ija.project.ijaproject.view.BoardView;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -11,6 +12,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import java.io.*;
 import java.time.LocalDateTime;
@@ -19,6 +21,7 @@ import java.util.*;
 
 public class GameApplication extends Application {
     private Game game;
+    private GameLogger logger = new GameLogger();
     private BoardView boardView;
     private BoardView infoView;
     private Stage infoStage;
@@ -135,7 +138,7 @@ public class GameApplication extends Application {
             cols = 12;
         }
 
-        game = Game.create(rows, cols);
+        game = new Game(rows, cols, logger);
 
         // Create puzzle elements
         for (Object[] n : puzzle) {
@@ -209,7 +212,235 @@ public class GameApplication extends Application {
             infoStage.toFront();
         }
     }
+    public void saveGameLog() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Game Log");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Game Log Files", "*.glog")
+        );
 
+        // Generate default filename with timestamp
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        fileChooser.setInitialFileName("game_" + timestamp + ".glog");
+
+        File file = fileChooser.showSaveDialog(null);
+        if (file != null) {
+            try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+                for (String action : logger.log()) {
+                    writer.println(action);
+                }
+            } catch (IOException e) {
+                System.err.println("Error saving game log: " + e.getMessage());
+            }
+        }
+    }
+
+    public void loadGameLog() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Load Game Log");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Game Log Files", "*.glog")
+        );
+
+        File file = fileChooser.showOpenDialog(null);
+        if (file != null) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                // First, load the log into memory
+                List<String> logActions = new ArrayList<>();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    logActions.addAll(Arrays.asList(line.split(" ")));
+                }
+
+                if (logActions.isEmpty()) return;
+
+                // Process first game initialization command
+                String firstAction = logActions.get(0);
+                if (firstAction.equals("G")) {
+                    Position pos = parsePosition(logActions.get(1));
+                    if (pos != null) {
+                        // Temporarily disable logging
+                        logger.clear();
+
+                        // Create new game
+                        game = new Game(pos.getRow(), pos.getCol(), logger);
+
+                        // Process remaining actions
+                        for (int i = 2; i < logActions.size(); i++) {
+                            String action = logActions.get(i);
+                            if (action.equals("N") || action.equals("T")) {
+                                executeAction(action + " " + logActions.get(++i));
+                            }
+                        }
+
+                        game.init();
+
+                        // Update UI
+                        if (boardView != null) {
+                            BorderPane root = (BorderPane) boardView.getParent();
+                            boardView = new BoardView(game, false);
+                            root.setCenter(boardView);
+                        }
+
+                        statusLabel.setText("Game loaded from log");
+                    }
+                }
+            } catch (IOException e) {
+                System.err.println("Error loading game log: " + e.getMessage());
+            }
+        }
+    }
+
+    public void replayPreviousMove() {
+        if (logger.position() > 0 && game != null) {
+            logger.disable();
+            String[] parts = logger.getLine().split(" ", 2);
+            switch (parts[0]) {
+                case "G":
+                    // Game initialization - Cannot be undone
+                    break;
+                case "N":
+                    // Node creation - Cannot be undone
+                    break;
+                case "T":
+                    // Turn action - format is "T [row@col]"
+                    Position pos = parsePosition(parts[1]);
+                    game.node(pos).turnBack();
+                    logger.previous();
+                    break;
+            }
+            logger.enable();
+        }
+    }
+
+    public void replayNextMove() {
+        if (logger.position() < logger.log().size() - 1 && game != null) {
+            logger.disable();
+            logger.next();
+            String[] parts = logger.getLine().split(" ", 2);
+            switch (parts[0]) {
+                case "G":
+                    // Game initialization - Should not be possible to undo
+                    break;
+                case "N":
+                    parseAndCreateNode(parts[1]);
+                    break;
+                case "T":
+                    // Turn action - format is "T [row@col]"
+                    Position pos = parsePosition(parts[1]);
+                    game.node(pos).turn();
+                    break;
+            }
+            logger.enable();
+        }
+    }
+
+    private void executeAction(String action) {
+        if (action == null || action.isEmpty()) return;
+
+        // Parse and execute the action based on its type
+        String[] parts = action.split(" ", 2);
+        String actionType = parts[0];
+        Position pos = null;
+
+        System.out.println("ActionType: "+ actionType);
+        switch (actionType) {
+            case "G":
+                System.out.println("Game initialization: " + parts[1]);
+                // Game initialization
+                if (parts.length > 1) {
+                    pos = parsePosition(parts[1]);
+                    if (pos != null) {
+                        game = new Game(pos.getRow(), pos.getCol(), logger);
+
+                        if (boardView != null) {
+                            BorderPane root = (BorderPane) boardView.getParent();
+                            boardView = new BoardView(game, false);
+                            root.setCenter(boardView);
+
+                            // Update info view if open
+                            if (infoView != null && infoStage != null && infoStage.isShowing()) {
+                                BorderPane infoRoot = (BorderPane) infoView.getParent();
+                                infoView = new BoardView(game, true);
+                                infoRoot.setCenter(infoView);
+                            }
+                        }
+
+                        statusLabel.setText("Game loaded from log");
+                    }
+                }
+                break;
+            case "N":
+                System.out.println("Node creation: " + parts[1]);
+                // Node creation - will need to parse the node details and create it
+                parseAndCreateNode(parts[1]);
+                break;
+            case "T":
+                System.out.println("Turn action: " + parts[1]);
+                // Turn action - format is "T [row@col]"
+                if (parts.length > 1) {
+                    pos = parsePosition(parts[1]);
+                    if (pos != null) game.node(pos).turn();
+                }
+                break;
+        }
+    }
+
+    private Position parsePosition(String posStr) {
+        // Parse position format "[row@col]"
+        try {
+            posStr = posStr.replace("[", "").replace("]", "");
+            String[] coords = posStr.split("@");
+            int row = Integer.parseInt(coords[0]);
+            int col = Integer.parseInt(coords[1]);
+            return new Position(row, col);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void parseAndCreateNode(String nodeStr) {
+        try {
+            // Remove outer braces
+            nodeStr = nodeStr.substring(1, nodeStr.length() - 1);
+
+            // Extract type (first character)
+            String typeStr = nodeStr.substring(0, 1);
+
+            // Extract position (between first [ and ])
+            int posStartIdx = nodeStr.indexOf('[');
+            int posEndIdx = nodeStr.indexOf(']');
+            String posStr = nodeStr.substring(posStartIdx, posEndIdx + 1);
+            Position position = parsePosition(posStr);
+
+            // Extract sides (between second [ and ])
+            int sidesStartIdx = nodeStr.indexOf('[', posEndIdx + 1);
+            int sidesEndIdx = nodeStr.indexOf(']', sidesStartIdx);
+            String sidesStr = nodeStr.substring(sidesStartIdx + 1, sidesEndIdx);
+
+            // Parse sides
+            String[] sideNames = sidesStr.split(",");
+            Side[] sides = new Side[sideNames.length];
+            for (int i = 0; i < sideNames.length; i++) {
+                sides[i] = Side.valueOf(sideNames[i]);
+            }
+
+            // Create node based on type
+            switch (typeStr) {
+                case "L":
+                    game.createLinkNode(position, sides);
+                    break;
+                case "B":
+                    game.createBulbNode(position, sides[0]);
+                    break;
+                case "P":
+                    game.createPowerNode(position, sides);
+                    break;
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing node: " + e.getMessage());
+        }
+    }
     public static void main(String[] args) {
         launch();
     }

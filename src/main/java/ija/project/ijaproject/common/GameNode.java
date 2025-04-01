@@ -51,7 +51,7 @@ public class GameNode extends AbstractObservableField {
     public void setPowered(boolean powered) {
         if (this.isPowered != powered) {
             this.isPowered = powered;
-            this.notifyObservers();
+            this.notifyObservers(null);
         }
     }
 
@@ -62,7 +62,17 @@ public class GameNode extends AbstractObservableField {
         }
         this.sides = newSides;
         this.turnCount++;
-        this.notifyObservers();
+        this.notifyObservers("T " + this.position);
+    }
+
+    public void turnBack() {
+        Set<Side> newSides = EnumSet.noneOf(Side.class);
+        for (Side side : this.sides) {
+            newSides.add(side.previous());
+        }
+        this.sides = newSides;
+        this.turnCount--;
+        this.notifyObservers(null);
     }
 
     public int turnsToInitialState() {
@@ -169,5 +179,4 @@ public class GameNode extends AbstractObservableField {
         final String RESET = "\u001B[0m";
         return COLOR + symbol + RESET;
     }
-
 }

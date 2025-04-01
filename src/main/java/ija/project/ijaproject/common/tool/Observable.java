@@ -10,9 +10,9 @@ public interface Observable {
 
     void removeObserver(Observer var1);
 
-    void notifyObservers();
+    void notifyObservers(String log);
 
     public interface Observer {
-        void update(Observable var1);
+        void update(Observable var1, String log);
     }
 }

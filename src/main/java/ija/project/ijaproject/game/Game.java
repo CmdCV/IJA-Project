@@ -14,8 +14,12 @@ public class Game implements ToolEnvironment, Observable.Observer {
     private final GameNode[][] board;
     private Position powerPlaced = null;
     private boolean updating = false; // Flag to prevent re-entrant calls
+    private GameLogger logger = null;
 
-    public Game(int rows, int cols) {
+    public Game(int rows, int cols, GameLogger logger) {
+        if (rows < 1 || cols < 1) {
+            throw new IllegalArgumentException();
+        }
         this.rows = rows;
         this.cols = cols;
         this.board = new GameNode[rows][cols];
@@ -26,13 +30,8 @@ public class Game implements ToolEnvironment, Observable.Observer {
                 this.setBoardNode(position, new GameNode(position, Type.EMPTY));
             }
         }
-    }
-
-    public static Game create(int rows, int cols) {
-        if (rows < 1 || cols < 1) {
-            throw new IllegalArgumentException();
-        }
-        return new Game(rows, cols);
+        this.logger = logger;
+        this.logger.logAction("G [" + rows + "@" + cols + "]");
     }
 
     public int rows() {
@@ -72,6 +71,7 @@ public class Game implements ToolEnvironment, Observable.Observer {
         }
         this.board[position.getRow() - 1][position.getCol() - 1] = node;
         node.addObserver(this);
+        if (logger != null) logger.logAction("N " + node);
     }
 
     private GameNode createNode(Position position, Type type, Side... sides) {
@@ -135,7 +135,8 @@ public class Game implements ToolEnvironment, Observable.Observer {
     }
 
     @Override
-    public void update(Observable node) {
+    public void update(Observable node, String event) {
+        if (event != null) logger.logAction(event);
         if (updating) return; // Prevent re-entrant calls
         updating = true;
         try {
