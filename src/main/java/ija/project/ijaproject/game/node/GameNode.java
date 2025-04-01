@@ -8,7 +8,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static ija.project.ijaproject.game.node.NodeType.POWER;
+import static ija.project.ijaproject.game.node.NodeType.*;
 
 public class GameNode extends AbstractObservable {
     private final NodeType type;

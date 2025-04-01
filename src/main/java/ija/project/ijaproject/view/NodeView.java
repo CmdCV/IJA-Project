@@ -1,5 +1,6 @@
 package ija.project.ijaproject.view;
 
+import ija.project.ijaproject.game.Game;
 import ija.project.ijaproject.game.node.GameNode;
 import ija.project.ijaproject.common.Observable;
 import javafx.application.Platform;
@@ -13,24 +14,28 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 
 import static ija.project.ijaproject.game.node.NodeSide.*;
-import static ija.project.ijaproject.game.node.NodeType.BULB;
-import static ija.project.ijaproject.game.node.NodeType.POWER;
+import static ija.project.ijaproject.game.node.NodeType.*;
 
 public class NodeView extends Pane implements Observable.Observer {
-    private final GameNode field;
+    private final GameNode node;
     private final boolean infoView;
+    private final Game game;
     private boolean initialLayoutDone = false;
 
-    public NodeView(final GameNode field, boolean infoView, int size) {
-        this.field = field;
+    public NodeView(final GameNode node, boolean infoView, int size, Game game) {
+        this.node = node;
         this.infoView = infoView;
+        this.game = game;
         this.setStyle("-fx-border-color: gray;");
         this.setPrefSize(size, size);
         this.setMinSize(size, size);  // Ensure minimum size
         if (!this.infoView) {
-            this.setOnMouseClicked(event -> field.turn(true));
+            this.setOnMouseClicked(event -> {
+                if(!game.isComplete()) node.turn(true);
+            });
         }
-        field.addObserver(this);
+        game.addObserver(this);
+        node.addObserver(this);
 
         // Add a layout listener to update view once component is sized
         this.widthProperty().addListener((obs, oldVal, newVal) -> {
@@ -62,47 +67,73 @@ public class NodeView extends Pane implements Observable.Observer {
 
         double centerX = width / 2;
         double centerY = height / 2;
-        Color color = field.isPowered() ? Color.RED : Color.BLACK;
+        Color color = node.isPowered() ? Color.RED : Color.BLACK;
 
-        if (field.connects(NORTH)) {
+        if (node.connects(NORTH)) {
             Line line = new Line(centerX, 0, centerX, centerY);
             line.setStroke(color);
             this.getChildren().add(line);
         }
 
-        if (field.connects(EAST)) {
+        if (node.connects(EAST)) {
             Line line = new Line(width, centerY, centerX, centerY);
             line.setStroke(color);
             this.getChildren().add(line);
         }
 
-        if (field.connects(SOUTH)) {
+        if (node.connects(SOUTH)) {
             Line line = new Line(centerX, height, centerX, centerY);
             line.setStroke(color);
             this.getChildren().add(line);
         }
 
-        if (field.connects(WEST)) {
+        if (node.connects(WEST)) {
             Line line = new Line(0, centerY, centerX, centerY);
             line.setStroke(color);
             this.getChildren().add(line);
         }
 
-        if (field.is(POWER)) {
+        if (node.is(POWER)) {
             this.setStyle("-fx-background-color: green; -fx-border-color: gray;");
-        } else if (field.is(BULB)) {
+        } else if (node.is(BULB)) {
             Circle circle = new Circle(centerX, centerY, Math.min(width, height) / 2 - 5);
             circle.setFill(color);
             this.getChildren().add(circle);
         }
 
-        // Add turn count information in info view mode
-        if (infoView) {
-            int turnsNeeded = field.turnsToInitialState();
+        if (infoView || game.isComplete()) {
+            int turnCount = node.turnCount();
+            int turnsToInitial = node.turnsToInitialState();
 
-            // Only show if turns are needed
-            if (turnsNeeded > 0) {
-                Label turnLabel = new Label(String.valueOf(turnsNeeded));
+            // Display values depending on mode
+            if (infoView && !node.is(EMPTY)) {
+                // Create two labels for infoView mode
+                Label totalLabel = new Label(String.valueOf(turnCount));
+                totalLabel.setTextFill(Color.WHITE);
+                totalLabel.setFont(Font.font("System", FontWeight.BOLD, height * 0.25));
+                totalLabel.setTextAlignment(TextAlignment.CENTER);
+
+                Label neededLabel = new Label("/" + turnsToInitial);
+                neededLabel.setTextFill(Color.LIGHTBLUE);
+                neededLabel.setFont(Font.font("System", FontWeight.BOLD, height * 0.25));
+                neededLabel.setTextAlignment(TextAlignment.CENTER);
+
+                // Position the labels
+                totalLabel.setLayoutX(centerX - (height * 0.2));
+                totalLabel.setLayoutY(centerY - (height * 0.15));
+
+                neededLabel.setLayoutX(centerX);
+                neededLabel.setLayoutY(centerY - (height * 0.15));
+
+                // Add a background circle
+                Circle background = new Circle(centerX, centerY, height * 0.3);
+                background.setFill(Color.rgb(0, 0, 0, 0.7));
+
+                this.getChildren().addAll(background, totalLabel, neededLabel);
+            }
+            // Display only turnCount when game is complete
+            else if (game.isComplete() && turnCount > 0) {
+                Label turnLabel = new Label(String.valueOf(turnCount));
                 turnLabel.setTextFill(Color.WHITE);
                 turnLabel.setFont(Font.font("System", FontWeight.BOLD, height * 0.33));
                 turnLabel.setTextAlignment(TextAlignment.CENTER);
@@ -111,7 +142,7 @@ public class NodeView extends Pane implements Observable.Observer {
                 turnLabel.setLayoutX(centerX - (height * 0.1));
                 turnLabel.setLayoutY(centerY - (height * 0.2));
 
-                // Add a background circle to make text more visible
+                // Add a background circle
                 Circle background = new Circle(centerX, centerY, height * 0.25);
                 background.setFill(Color.rgb(0, 0, 0, 0.7));
 

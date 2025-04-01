@@ -1,19 +1,19 @@
 package ija.project.ijaproject.view;
 
+import ija.project.ijaproject.game.Game;
 import ija.project.ijaproject.game.node.GameNode;
 import ija.project.ijaproject.game.node.NodePosition;
-import ija.project.ijaproject.game.Game;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
 public class BoardView extends GridPane {
-    private final Game environment;
+    private final Game game;
     private final boolean infoBoardView;
 
-    public BoardView(final Game environment, boolean infoBoardView) {
-        this.environment = environment;
+    public BoardView(final Game game, boolean infoBoardView) {
+        this.game = game;
         this.infoBoardView = infoBoardView;
         this.setHgap(2);
         this.setVgap(2);
@@ -30,11 +30,11 @@ public class BoardView extends GridPane {
     }
 
     private void initializeBoard() {
-        int size = 500 / Math.max(environment.rows(), environment.cols());
-        for (int row = 1; row <= environment.rows(); row++) {
-            for (int col = 1; col <= environment.cols(); col++) {
-                GameNode field = environment.node(new NodePosition(row, col));
-                NodeView nodeView = new NodeView(field, this.infoBoardView, size);
+        int size = 500 / Math.max(game.rows(), game.cols());
+        for (int row = 1; row <= game.rows(); row++) {
+            for (int col = 1; col <= game.cols(); col++) {
+                GameNode field = game.node(new NodePosition(row, col));
+                NodeView nodeView = new NodeView(field, this.infoBoardView, size, game);
                 this.add(nodeView, col - 1, row - 1);
             }
         }

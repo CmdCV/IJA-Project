@@ -1,20 +1,25 @@
 package ija.project.ijaproject.game;
 
+import ija.project.ijaproject.common.AbstractObservable;
+import ija.project.ijaproject.common.Observable;
 import ija.project.ijaproject.game.node.GameNode;
 import ija.project.ijaproject.game.node.NodePosition;
 import ija.project.ijaproject.game.node.NodeSide;
 import ija.project.ijaproject.game.node.NodeType;
-import ija.project.ijaproject.common.Observable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static ija.project.ijaproject.game.node.NodeType.BULB;
 import static ija.project.ijaproject.game.node.NodeType.POWER;
 
-public class Game implements Observable.Observer {
+public class Game extends AbstractObservable implements Observable.Observer {
     private final int rows;
     private final int cols;
     private final GameNode[][] board;
     private final GameLogger logger;
     private NodePosition powerPlaced = null;
+    private final List<NodePosition> bulbs = new ArrayList<>();
     private boolean updating = false; // Flag to prevent re-entrant calls
 
     public Game(int rows, int cols) {
@@ -67,6 +72,7 @@ public class Game implements Observable.Observer {
         }
         GameNode node = new GameNode(position, type, sides);
         if (type == POWER) powerPlaced = position;
+        if (type == BULB) bulbs.add(position);
         this.setBoardNode(position, node);
         return node;
     }
@@ -84,12 +90,10 @@ public class Game implements Observable.Observer {
     }
 
     public boolean isComplete() {
-        for (int r = 1; r <= rows; r++) {
-            for (int c = 1; c <= cols; c++) {
-                GameNode n = this.node(new NodePosition(r, c));
-                if (n != null && n.is(BULB)) {
-                    if (!n.isPowered()) return false;
-                }
+        for (NodePosition position : bulbs) {
+            GameNode node = this.node(position);
+            if (node != null && node.is(BULB)) {
+                if (!node.isPowered()) return false;
             }
         }
         return true;
@@ -111,8 +115,9 @@ public class Game implements Observable.Observer {
                 }
             }
             // Update powerState of all nodes from Power
-            if (powerPlaced != null) {
+            if (powerPlaced != null && !bulbs.isEmpty()) {
                 checkNode(new NodePosition(powerPlaced.row(), powerPlaced.col()), null);
+                notifyObservers(null);
             } else {
                 throw new IllegalStateException("No power node placed");
             }
