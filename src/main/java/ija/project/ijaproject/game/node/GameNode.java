@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static ija.project.ijaproject.game.node.NodeSide.*;
 import static ija.project.ijaproject.game.node.NodeType.*;
 
 public class GameNode extends AbstractObservable {
@@ -30,6 +31,14 @@ public class GameNode extends AbstractObservable {
     public boolean connects(NodeSide s) {
         return this.sides.contains(s);
     }
+    public boolean connects(NodeSide... s) {
+        for (NodeSide side : s) {
+            if (!this.connects(side)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     public boolean is(NodeType... types) {
         return Arrays.asList(types).contains(this.type);
@@ -47,7 +56,7 @@ public class GameNode extends AbstractObservable {
     }
 
     public void turn(boolean player) {
-        if(!this.is(EMPTY)) {
+        if(!this.is(EMPTY) && !this.connects(NORTH, EAST, SOUTH, WEST)) {
             Set<NodeSide> newSides = EnumSet.noneOf(NodeSide.class);
             for (NodeSide side : this.sides) {
                 newSides.add(side.next());

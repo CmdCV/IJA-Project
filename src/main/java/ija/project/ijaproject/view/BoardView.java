@@ -8,8 +8,8 @@ import javafx.geometry.Pos;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 
 public class BoardView extends GridPane {
@@ -60,9 +60,15 @@ public class BoardView extends GridPane {
     }
 
     private void initializeBoard() {
-        // Calculate optimal size based on board dimensions
+        // Konstantní velikost desky
         int baseSize = 500;
-        int nodeSize = baseSize / Math.max(game.rows(), game.cols());
+        // Výpočet prostoru, který zabírají mezery a okraje
+        int totalGapSpace = (int) ((game.cols() - 1) * this.getHgap()); // horizontální mezery
+        int totalPaddingSpace = (int) this.getPadding().getLeft() + (int) this.getPadding().getRight();
+        // Dostupný prostor po odečtení mezer
+        int availableWidth = baseSize - totalGapSpace - totalPaddingSpace;
+        // Výpočet velikosti jednoho políčka
+        int nodeSize = availableWidth / game.cols();
 
         for (int row = 1; row <= game.rows(); row++) {
             for (int col = 1; col <= game.cols(); col++) {
