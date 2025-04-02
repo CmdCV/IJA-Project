@@ -104,7 +104,7 @@ public class GameRepo {
         createNodes(game, connections, startPos, difficulty);
 
         // Náhodně otočit uzly pro zvýšení obtížnosti
-//        randomizeRotations(game);
+        randomizeRotations(game);
     }
 
     private static void addNeighborsToFrontier(

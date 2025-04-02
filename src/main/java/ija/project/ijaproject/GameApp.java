@@ -249,6 +249,7 @@ public class GameApp extends Application {
                 if (firstAction.equals("G")) {
                     NodePosition pos = NodePosition.fromString(logActions.get(1));
                     if (pos != null) {
+                        game = new Game(pos.row(), pos.col());
 
                         // Process remaining actions
                         boolean generated = false;
