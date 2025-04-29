@@ -1,0 +1,1 @@
+memberSearchIndex = [{"p":"ija.project.ijaproject","c":"GameApp","l":"GameApp()","u":"%3Cinit%3E()"},{"p":"ija.project.ijaproject","c":"GameApp","l":"main(String[])","u":"main(java.lang.String[])"},{"p":"ija.project.ijaproject","c":"GameApp","l":"start(Stage)","u":"start(javafx.stage.Stage)"}];updateSearchResults();
