@@ -1,10 +1,8 @@
 /**
  * @file GameNode.java
  * @brief Represents a game node in the game grid.
- * 
  * This class extends AbstractObservable and represents a single node in the game grid.
  * It manages its type, position, sides, power state, and rotation logic.
- * 
  * @note This code was adapted (stolen) from the second assignment.
  */
 
@@ -19,25 +17,31 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ija.project.ijaproject.game.node.NodeSide.*;
-import static ija.project.ijaproject.game.node.NodeType.*;
+import static ija.project.ijaproject.game.node.NodeType.EMPTY;
+import static ija.project.ijaproject.game.node.NodeType.POWER;
 
 /**
  * @brief Represents a single node in the game grid.
- * 
+ *
  * A GameNode has a type, position, and sides that define its connections.
  * It can be rotated, powered, and observed for changes.
  */
 public class GameNode extends AbstractObservable {
-    private final NodeType type; /**< The type of the node. */
-    private final NodePosition position; /**< The position of the node in the grid. */
-    private final Set<NodeSide> initialSides; /**< The initial sides of the node. */
-    private Set<NodeSide> sides; /**< The current sides of the node. */
-    private int turnCount = 0; /**< The number of times the node has been rotated. */
+    private final NodeType type;
+    /**< The type of the node. */
+    private final NodePosition position;
+    /**< The position of the node in the grid. */
+    private final Set<NodeSide> initialSides;
+    /**< The initial sides of the node. */
+    private Set<NodeSide> sides;
+    /**< The current sides of the node. */
+    private int turnCount = 0;
+    /**< The number of times the node has been rotated. */
     private boolean isPowered = false; /**< Whether the node is powered. */
 
     /**
      * @brief Constructs a GameNode with the given position, type, and sides.
-     * 
+     *
      * @param position The position of the node in the grid.
      * @param type The type of the node.
      * @param sides The sides of the node that are connected.
@@ -53,7 +57,7 @@ public class GameNode extends AbstractObservable {
 
     /**
      * @brief Checks if the node connects to a specific side.
-     * 
+     *
      * @param s The side to check.
      * @return True if the node connects to the side, false otherwise.
      */
@@ -63,7 +67,7 @@ public class GameNode extends AbstractObservable {
 
     /**
      * @brief Checks if the node connects to all specified sides.
-     * 
+     *
      * @param s The sides to check.
      * @return True if the node connects to all sides, false otherwise.
      */
@@ -78,7 +82,7 @@ public class GameNode extends AbstractObservable {
 
     /**
      * @brief Checks if the node is of a specific type.
-     * 
+     *
      * @param types The types to check.
      * @return True if the node matches any of the specified types, false otherwise.
      */
@@ -88,7 +92,7 @@ public class GameNode extends AbstractObservable {
 
     /**
      * @brief Sets the power state of the node.
-     * 
+     *
      * @param powered True to power the node, false to unpower it.
      */
     public void setPower(boolean powered) {
@@ -100,7 +104,7 @@ public class GameNode extends AbstractObservable {
 
     /**
      * @brief Checks if the node is powered.
-     * 
+     *
      * @return True if the node is powered, false otherwise.
      */
     public boolean isPowered() {
@@ -109,7 +113,7 @@ public class GameNode extends AbstractObservable {
 
     /**
      * @brief Rotates the node clockwise.
-     * 
+     *
      * @param player True if the rotation is performed by a player, false otherwise.
      */
     public void turn(boolean player) {
@@ -126,7 +130,7 @@ public class GameNode extends AbstractObservable {
 
     /**
      * @brief Rotates the node counterclockwise.
-     * 
+     *
      * @param player True if the rotation is performed by a player, false otherwise.
      */
     public void turnBack(boolean player) {
@@ -143,7 +147,7 @@ public class GameNode extends AbstractObservable {
 
     /**
      * @brief Gets the number of times the node has been rotated.
-     * 
+     *
      * @return The rotation count.
      */
     public int turnCount() {
@@ -152,7 +156,7 @@ public class GameNode extends AbstractObservable {
 
     /**
      * @brief Calculates the number of rotations needed to return to the initial state.
-     * 
+     *
      * @return The number of rotations to return to the initial state.
      */
     public int turnsToInitialState() {
@@ -176,7 +180,7 @@ public class GameNode extends AbstractObservable {
 
     /**
      * @brief Converts the node to a string representation.
-     * 
+     *
      * @return A string representing the node.
      */
     @Override

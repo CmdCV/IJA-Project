@@ -14,32 +14,44 @@ import static ija.project.ijaproject.game.node.NodeType.*;
 
 /**
  * @brief Represents the game board and main game logic.
- * 
  * The Game class manages the game board, node creation, and energy propagation in the electrical network.
  * Implements Observable.Observer to monitor changes in nodes.
  */
 public class Game extends AbstractObservable implements Observable.Observer {
-    /** @brief Number of rows on the game board */
+    /**
+     * @brief Number of rows on the game board
+     */
     private final int rows;
-    /** @brief Number of columns on the game board */
+    /**
+     * @brief Number of columns on the game board
+     */
     private final int cols;
-    /** @brief Two-dimensional array representing the game board */
+    /**
+     * @brief Two-dimensional array representing the game board
+     */
     private final GameNode[][] board;
-    /** @brief Logger for recording game actions */
+    /**
+     * @brief Logger for recording game actions
+     */
     private final GameLogger logger;
-    /** @brief Position of the placed power source */
+    /**
+     * @brief Position of the placed power source
+     */
     private NodePosition powerPlaced = null;
-    /** @brief List of positions of all bulbs on the game board */
+    /**
+     * @brief List of positions of all bulbs on the game board
+     */
     private final List<NodePosition> bulbs = new ArrayList<>();
-    /** @brief Flag preventing recursive calls during updates */
+    /**
+     * @brief Flag preventing recursive calls during updates
+     */
     private boolean updating = false; // Flag to prevent re-entrant calls
 
     /**
-     * @brief Constructor creates a new game with the given number of rows and columns.
-     * 
      * @param rows Number of rows on the game board
      * @param cols Number of columns on the game board
      * @throws IllegalArgumentException If the number of rows or columns is less than 1
+     * @brief Constructor creates a new game with the given number of rows and columns.
      */
     public Game(int rows, int cols) {
         if (rows < 1 || cols < 1) {
@@ -62,29 +74,26 @@ public class Game extends AbstractObservable implements Observable.Observer {
     }
 
     /**
-     * @brief Returns the number of rows on the game board.
-     * 
      * @return Number of rows
+     * @brief Returns the number of rows on the game board.
      */
     public int rows() {
         return this.rows;
     }
 
     /**
-     * @brief Returns the number of columns on the game board.
-     * 
      * @return Number of columns
+     * @brief Returns the number of columns on the game board.
      */
     public int cols() {
         return this.cols;
     }
 
     /**
-     * @brief Returns the node at the given position.
-     * 
      * @param p Position of the node
      * @return Node at the given position
      * @throws IllegalArgumentException If the position is invalid
+     * @brief Returns the node at the given position.
      */
     public GameNode node(NodePosition p) {
         if (!isValidPosition(p)) {
@@ -94,11 +103,10 @@ public class Game extends AbstractObservable implements Observable.Observer {
     }
 
     /**
-     * @brief Sets a node at the given position.
-     * 
      * @param position Position where the node should be placed
-     * @param node Node to be placed
+     * @param node     Node to be placed
      * @throws IllegalArgumentException If the position is invalid or a non-empty node already exists at the position
+     * @brief Sets a node at the given position.
      */
     private void setBoardNode(NodePosition position, GameNode node) {
         if (!isValidPosition(position)) {
@@ -113,12 +121,11 @@ public class Game extends AbstractObservable implements Observable.Observer {
     }
 
     /**
-     * @brief Creates a new node of the given type at the specified position.
-     * 
      * @param position Position where the node should be placed
-     * @param type Type of the node
-     * @param sides Sides to which the node connects
+     * @param type     Type of the node
+     * @param sides    Sides to which the node connects
      * @return Created node or null if unsuccessful
+     * @brief Creates a new node of the given type at the specified position.
      */
     private GameNode createNode(NodePosition position, NodeType type, NodeSide... sides) {
         if (!isValidPosition(position) || (type == NodeType.LINK && sides.length < 2) || (type == POWER && (sides.length < 1 || powerPlaced != null))) {
@@ -132,42 +139,38 @@ public class Game extends AbstractObservable implements Observable.Observer {
     }
 
     /**
-     * @brief Creates a new BULB node at the specified position.
-     * 
      * @param position Position where the node should be placed
-     * @param side Side to which the bulb connects
+     * @param side     Side to which the bulb connects
      * @return Created bulb node or null if unsuccessful
+     * @brief Creates a new BULB node at the specified position.
      */
     public GameNode createBulbNode(NodePosition position, NodeSide side) {
         return createNode(position, BULB, side);
     }
 
     /**
-     * @brief Creates a new LINK node at the specified position.
-     * 
      * @param position Position where the node should be placed
-     * @param sides Sides to which the link connects
+     * @param sides    Sides to which the link connects
      * @return Created link node or null if unsuccessful
+     * @brief Creates a new LINK node at the specified position.
      */
     public GameNode createLinkNode(NodePosition position, NodeSide... sides) {
         return createNode(position, NodeType.LINK, sides);
     }
 
     /**
-     * @brief Creates a new POWER node at the specified position.
-     * 
      * @param position Position where the node should be placed
-     * @param sides Sides to which the power source connects
+     * @param sides    Sides to which the power source connects
      * @return Created power node or null if unsuccessful
+     * @brief Creates a new POWER node at the specified position.
      */
     public GameNode createPowerNode(NodePosition position, NodeSide... sides) {
         return createNode(position, POWER, sides);
     }
 
     /**
-     * @brief Checks if all bulbs in the game are powered.
-     * 
      * @return true if all bulbs are powered, otherwise false
+     * @brief Checks if all bulbs in the game are powered.
      */
     public boolean isComplete() {
         for (NodePosition position : bulbs) {
@@ -180,12 +183,10 @@ public class Game extends AbstractObservable implements Observable.Observer {
     }
 
     /**
-     * @brief Updates the game state based on changes in the nodes.
-     * 
-     * Implements the Observer method of the Observable interface.
-     * 
-     * @param o Observable object that triggered the update
+     * @param o     Observable object that triggered the update
      * @param event Event that triggered the update
+     * @brief Updates the game state based on changes in the nodes.
+     * Implements the Observer method of the Observable interface.
      */
     @Override
     public void update(Observable o, String event) {
@@ -210,9 +211,8 @@ public class Game extends AbstractObservable implements Observable.Observer {
     }
 
     /**
-     * @brief Initializes energy propagation from the power source.
-     * 
      * @throws IllegalStateException If no power source or no bulbs are placed
+     * @brief Initializes energy propagation from the power source.
      */
     public void init() {
         if (powerPlaced != null && !bulbs.isEmpty()) {
@@ -224,10 +224,9 @@ public class Game extends AbstractObservable implements Observable.Observer {
     }
 
     /**
-     * @brief Recursively checks and updates power status of nodes.
-     * 
      * @param position Current position of the node being checked
-     * @param from Side from which energy is coming (null for source)
+     * @param from     Side from which energy is coming (null for source)
+     * @brief Recursively checks and updates power status of nodes.
      */
     private void checkNode(NodePosition position, NodeSide from) {
         // Check if the position is valid
@@ -256,19 +255,17 @@ public class Game extends AbstractObservable implements Observable.Observer {
     }
 
     /**
-     * @brief Checks if a position is valid within the game board.
-     * 
      * @param position Position to check
      * @return true if the position is valid, otherwise false
+     * @brief Checks if a position is valid within the game board.
      */
     private boolean isValidPosition(NodePosition position) {
         return position.row() > 0 && position.row() <= rows && position.col() > 0 && position.col() <= cols;
     }
 
     /**
-     * @brief Returns the logger for recording game actions.
-     * 
      * @return Game logger
+     * @brief Returns the logger for recording game actions.
      */
     public GameLogger logger() {
         return logger;

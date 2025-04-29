@@ -38,11 +38,11 @@
   * the graphical user interface using JavaFX.
   */
  public class GameApp extends Application {
-     private Game game; ///< The current game instance.
-     private BoardView boardView; ///< The main board view.
-     private BoardView infoView; ///< The informational board view.
-     private Stage infoStage; ///< The stage for the informational view.
-     private Label statusLabel; ///< Label for displaying game status messages.
+     private Game game;             ///< The current game instance.
+     private BoardView boardView;   ///< The main board view.
+     private BoardView infoView;    ///< The informational board view.
+     private Stage infoStage;       ///< The stage for the informational view.
+     private Label statusLabel;     ///< Label for displaying game status messages.
  
      /**
       * @brief Entry point for the application.

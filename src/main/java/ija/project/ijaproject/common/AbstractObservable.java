@@ -1,10 +1,8 @@
 /**
  * @file AbstractObservable.java
  * @brief Abstract implementation of the Observable interface.
- * 
  * This class provides a base implementation of the Observable interface,
  * managing a set of observers and providing methods to add, remove, and notify them.
- * 
  * @note This code was adapted (stolen) from the second assignment.
  */
 
@@ -15,7 +13,6 @@ import java.util.Set;
 
 /**
  * @brief Abstract class implementing the Observable interface.
- * 
  * This class handles the registration, removal, and notification of observers.
  */
 public abstract class AbstractObservable implements Observable {
@@ -28,27 +25,24 @@ public abstract class AbstractObservable implements Observable {
     }
 
     /**
-     * @brief Registers an observer to this observable object.
-     * 
      * @param o The observer to be added.
+     * @brief Registers an observer to this observable object.
      */
     public void addObserver(Observer o) {
         this.observers.add(o);
     }
 
     /**
-     * @brief Unregisters an observer from this observable object.
-     * 
      * @param o The observer to be removed.
+     * @brief Unregisters an observer from this observable object.
      */
     public void removeObserver(Observer o) {
         this.observers.remove(o);
     }
 
     /**
-     * @brief Notifies all registered observers of an event.
-     * 
      * @param log A message or data describing the event.
+     * @brief Notifies all registered observers of an event.
      */
     public void notifyObservers(String log) {
         this.observers.forEach((var1) -> var1.update(this, log));
