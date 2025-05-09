@@ -1,3 +1,13 @@
+/*
+#########################################################
+#                     IJA - project                     #
+#         Authors: Urbánek Aleš, Kováčik Martin         #
+#              Logins: xurbana00, xkovacm01             #
+#                     Description:                      #
+#                                                       #
+#########################################################
+*/
+
 /**
  * @file NodeType.java
  * @brief Represents the types of nodes in the game grid.

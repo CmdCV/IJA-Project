@@ -1,3 +1,14 @@
+/*
+#########################################################
+#                     IJA - project                     #
+#         Authors: Urbánek Aleš, Kováčik Martin         #
+#              Logins: xurbana00, xkovacm01             #
+#                     Description:                      #
+#                                                       #
+#########################################################
+*/
+
+
 /**
  * @file GameNode.java
  * @brief Represents a game node in the game grid.

@@ -1,3 +1,14 @@
+/*
+#########################################################
+#                     IJA - project                     #
+#         Authors: Urbánek Aleš, Kováčik Martin         #
+#              Logins: xurbana00, xkovacm01             #
+#                     Description:                      #
+#                                                       #
+#########################################################
+*/
+
+
 /**
  * @file Observable.java
  * @brief Interface for implementing the Observer design pattern.

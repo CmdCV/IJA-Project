@@ -1,3 +1,20 @@
+/*
+#########################################################
+#                     IJA - project                     #
+#         Authors: Urbánek Aleš, Kováčik Martin         #
+#              Logins: xurbana00, xkovacm01             #
+#                     Description:                      #
+#  Abstract base for the Observer design pattern.       #
+#  Allows registration, removal, and notification       #
+#  of observers (Observer) within MVC architecture.     #
+#  Intended for the model layer to inform multiple      #
+#  system components about state changes.               #
+#########################################################
+*/
+
+
+
+
 /**
  * @file AbstractObservable.java
  * @brief Abstract implementation of the Observable interface.

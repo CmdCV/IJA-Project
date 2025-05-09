@@ -1,3 +1,13 @@
+/*
+#########################################################
+#                     IJA - project                     #
+#         Authors: Urbánek Aleš, Kováčik Martin         #
+#              Logins: xurbana00, xkovacm01             #
+#                     Description:                      #
+#                                                       #
+#########################################################
+*/
+
 /**
  * @file GameApp.java
  * @brief Main application class for the LightBulb game.

@@ -1,4 +1,12 @@
-/// filepath: /Users/martinkovacik/Downloads/IJA-Project/src/main/java/ija/project/ijaproject/game/GameLogger.java
+/*
+#########################################################
+#                     IJA - project                     #
+#         Authors: Urbánek Aleš, Kováčik Martin         #
+#              Logins: xurbana00, xkovacm01             #
+#                     Description:                      #
+#                                                       #
+#########################################################
+*/
 
 /**
  * @file GameLogger.java

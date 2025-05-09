@@ -1,3 +1,13 @@
+/*
+#########################################################
+#                     IJA - project                     #
+#         Authors: Urbánek Aleš, Kováčik Martin         #
+#              Logins: xurbana00, xkovacm01             #
+#                     Description:                      #
+#                                                       #
+#########################################################
+*/
+
 /**
  * @file NodeSide.java
  * @brief Represents the sides of a node in the game grid.

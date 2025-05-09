@@ -1,3 +1,14 @@
+/*
+#########################################################
+#                     IJA - project                     #
+#         Authors: Urbánek Aleš, Kováčik Martin         #
+#              Logins: xurbana00, xkovacm01             #
+#                     Description:                      #
+#                                                       #
+#########################################################
+*/
+
+
 package ija.project.ijaproject.game;
 
 import ija.project.ijaproject.common.AbstractObservable;

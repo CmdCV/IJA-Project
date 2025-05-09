@@ -1,3 +1,13 @@
+/*
+#########################################################
+#                     IJA - project                     #
+#         Authors: Urbánek Aleš, Kováčik Martin         #
+#              Logins: xurbana00, xkovacm01             #
+#                     Description:                      #
+#                                                       #
+#########################################################
+*/
+
 /**
  * @file NodePosition.java
  * @brief Represents the position of a node in the game grid.
