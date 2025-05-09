@@ -4,18 +4,13 @@
 #         Authors: Urbánek Aleš, Kováčik Martin         #
 #              Logins: xurbana00, xkovacm01             #
 #                     Description:                      #
-#                                                       #
+# Represents a single node in the game grid. Stores     #
+# position, type (e.g., BULB, POWER), and connection    #
+# sides. Supports rotation logic, power propagation,    #
+# and observer notifications. Allows checking           #
+# connectivity and tracking rotation state.             #
 #########################################################
 */
-
-
-/**
- * @file GameNode.java
- * @brief Represents a game node in the game grid.
- * This class extends AbstractObservable and represents a single node in the game grid.
- * It manages its type, position, sides, power state, and rotation logic.
- * @note This code was adapted (stolen) from the second assignment.
- */
 
 package ija.project.ijaproject.game.node;
 

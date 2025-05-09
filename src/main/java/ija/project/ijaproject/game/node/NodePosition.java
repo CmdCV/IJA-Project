@@ -4,16 +4,11 @@
 #         Authors: Urbánek Aleš, Kováčik Martin         #
 #              Logins: xurbana00, xkovacm01             #
 #                     Description:                      #
-#                                                       #
+# Represents a node's position in the grid.             #
+# Stores row and column values, and provides utilities  #
+# to parse from string and convert to formatted string. #
 #########################################################
 */
-
-/**
- * @file NodePosition.java
- * @brief Represents the position of a node in the game grid.
- * This class is a record that stores the row and column of a node's position
- * and provides utility methods for parsing and formatting positions.
- */
 
 package ija.project.ijaproject.game.node;
 

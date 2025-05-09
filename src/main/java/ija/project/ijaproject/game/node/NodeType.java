@@ -4,16 +4,10 @@
 #         Authors: Urbánek Aleš, Kováčik Martin         #
 #              Logins: xurbana00, xkovacm01             #
 #                     Description:                      #
-#                                                       #
+# Enum representing node types used in the game grid.   #
+# Defines BULB, LINK, POWER, and EMPTY node types.      #
 #########################################################
 */
-
-/**
- * @file NodeType.java
- * @brief Represents the types of nodes in the game grid.
- * This enum defines the possible types of nodes: BULB, LINK, POWER, and EMPTY.
- * Each type has a string representation for display purposes.
- */
 
 package ija.project.ijaproject.game.node;
 

@@ -4,18 +4,13 @@
 #         Authors: Urbánek Aleš, Kováčik Martin         #
 #              Logins: xurbana00, xkovacm01             #
 #                     Description:                      #
+# Interface for implementing the Observer design pattern#
+# Allows objects to register observers, notify them     #
+# about state changes, and manage subscriptions.        #
 #                                                       #
+# Adapted from assignment 2                             #
 #########################################################
 */
-
-
-/**
- * @file Observable.java
- * @brief Interface for implementing the Observer design pattern.
- * This interface allows objects to be observed by other objects (observers).
- * Observers can subscribe to an Observable to receive updates when certain events occur.
- * @note This code was adapted (stolen) from the second assignment.
- */
 
 package ija.project.ijaproject.common;
 

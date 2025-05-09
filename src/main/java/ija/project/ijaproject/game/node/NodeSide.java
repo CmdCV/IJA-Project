@@ -4,16 +4,12 @@
 #         Authors: Urbánek Aleš, Kováčik Martin         #
 #              Logins: xurbana00, xkovacm01             #
 #                     Description:                      #
-#                                                       #
+# Enum representing the four sides (NORTH, EAST, SOUTH, #
+# WEST) of a node in the game grid. Includes            #
+# utility methods to get the next, previous and         #
+# opposite directions for rotation logic.               #
 #########################################################
 */
-
-/**
- * @file NodeSide.java
- * @brief Represents the sides of a node in the game grid.
- * This enum defines the four cardinal directions (NORTH, EAST, SOUTH, WEST)
- * and provides utility methods for navigating between them.
- */
 
 package ija.project.ijaproject.game.node;
 

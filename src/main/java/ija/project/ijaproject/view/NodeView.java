@@ -1,7 +1,16 @@
-/**
- * @file NodeView.java
- * @brief Represents the visual representation of a single game node.
- */
+/*
+#########################################################
+#                     IJA - project                     #
+#         Authors: Urbánek Aleš, Kováčik Martin         #
+#              Logins: xurbana00, xkovacm01             #
+#                     Description:                      #
+# Visual component of a single game node. Uses JavaFX   #
+# to render node state, connections, and type (POWER,   #
+# BULB, etc.). Observes GameNode and Game state to      #
+# update its appearance. Handles click interaction,     #
+# layout, and conditional info overlays.                #
+#########################################################
+*/
 
 package ija.project.ijaproject.view;
 

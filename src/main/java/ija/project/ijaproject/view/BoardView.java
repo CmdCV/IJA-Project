@@ -1,9 +1,18 @@
-/// filepath: /Users/martinkovacik/Downloads/IJA-Project/src/main/java/ija/project/ijaproject/view/BoardView.java
-
-/**
- * @file BoardView.java
- * @brief Represents the visual representation of the game board.
- */
+/*
+#########################################################
+#                     IJA - project                     #
+#         Authors: Urbánek Aleš, Kováčik Martin         #
+#              Logins: xurbana00, xkovacm01             #
+#                     Description:                      #
+# JavaFX visualization of the game board. BoardView is  #
+# a GridPane component that displays the game grid      #
+# based on data from the Game class. It sets up         #
+# background, shadow, border, and places NodeView       #
+# components according to their position. Supports both #
+# interactive (game )and read-only (informational)      #
+# display.                                              #
+#########################################################
+*/
 
 package ija.project.ijaproject.view;
 

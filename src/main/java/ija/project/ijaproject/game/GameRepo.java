@@ -4,7 +4,11 @@
 #         Authors: Urbánek Aleš, Kováčik Martin         #
 #              Logins: xurbana00, xkovacm01             #
 #                     Description:                      #
-#                                                       #
+# Game board and puzzle generator. Provides maze        #
+# generation using Prim's algorithm based on difficulty #
+# levels, builds node connections and creates power,    #
+# bulb, and link nodes. Also handles randomized node    #
+# rotations for added challenge.                        #
 #########################################################
 */
 

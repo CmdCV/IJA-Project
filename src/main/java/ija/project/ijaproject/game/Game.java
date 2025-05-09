@@ -4,7 +4,12 @@
 #         Authors: Urbánek Aleš, Kováčik Martin         #
 #              Logins: xurbana00, xkovacm01             #
 #                     Description:                      #
-#                                                       #
+# Core logic of the game. Manages the board, node       #
+# creation (POWER, BULB, LINK), and energy propagation. #
+# Handles state updates via observer pattern, game      #
+# completion checks, and logging of user actions.       #
+# Also provides recursive power propagation based on    #
+# connectivity.                                         #
 #########################################################
 */
 

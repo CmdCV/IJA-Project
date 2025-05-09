@@ -4,6 +4,13 @@
 #         Authors: Urbánek Aleš, Kováčik Martin         #
 #              Logins: xurbana00, xkovacm01             #
 #                     Description:                      #
+# This is the main application class for the            #
+# IJA 2024/25 LightBulb game project. It sets up        #
+# the JavaFX GUI, initializes and manages game states,  #
+# handles user interaction (new game creation,          #
+# difficulty selection, loading/saving logs, replay),   #
+# and manages both the main and informational           #
+# game views.                                           #
 #                                                       #
 #########################################################
 */

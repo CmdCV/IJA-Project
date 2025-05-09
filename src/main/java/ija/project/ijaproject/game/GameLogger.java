@@ -4,10 +4,12 @@
 #         Authors: Urbánek Aleš, Kováčik Martin         #
 #              Logins: xurbana00, xkovacm01             #
 #                     Description:                      #
-#                                                       #
+# Handles logging of game actions and supports replay   #
+# functionality. Allows tracking user interactions,     #
+# saving logs to a file, and stepping through actions   #
+# for replay or debugging. Using observation of game.   #
 #########################################################
 */
-
 /**
  * @file GameLogger.java
  * @brief Handles logging of game actions and supports replay functionality.
